@@ -10,7 +10,9 @@ import {
   Tab,
   Alert,
   Snackbar,
+  Divider,
 } from '@mui/material';
+import { Google as GoogleIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx'; // Importa el hook useAuth
@@ -114,6 +116,21 @@ function AuthPage() {
     setLoading(false); // Finaliza carga
   };
 
+  // Handler para el Google Login
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Redirigir al endpoint de Google OAuth del backend
+      window.location.href = 'http://localhost:3001/api/auth/google';
+    } catch (err) {
+      console.error('Error durante el login con Google:', err);
+      setError('Error al iniciar sesión con Google. Inténtalo de nuevo.');
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -141,6 +158,37 @@ function AuthPage() {
             <Typography variant="h5" component="h2" gutterBottom sx={{ textAlign: 'center', color: 'text.primary' }}>
               Iniciar Sesión
             </Typography>
+            
+            {/* Google Login Button */}
+            <Button
+              onClick={handleGoogleLogin}
+              variant="outlined"
+              fullWidth
+              startIcon={<GoogleIcon />}
+              disabled={loading}
+              sx={{
+                mb: 2,
+                borderColor: '#db4437',
+                color: '#db4437',
+                '&:hover': {
+                  borderColor: '#c23321',
+                  backgroundColor: 'rgba(219, 68, 55, 0.04)',
+                },
+                borderRadius: 8,
+                textTransform: 'none',
+                fontSize: '1rem',
+                py: 1.5,
+              }}
+            >
+              Continuar con Google
+            </Button>
+
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                o
+              </Typography>
+            </Divider>
+
             <TextField
               label="Correo Electrónico"
               type="email"
@@ -149,6 +197,8 @@ function AuthPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
+              helperText={email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Ingresa un correo válido' : ''}
             />
             <TextField
               label="Contraseña"
@@ -158,15 +208,18 @@ function AuthPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={password && password.length < 6}
+              helperText={password && password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : ''}
             />
             <Button
               type="submit"
               variant="contained"
               color="secondary"
               size="large"
+              disabled={loading}
               sx={{ mt: 2, borderRadius: 8 }}
             >
-              Iniciar Sesión
+              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
             <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
               ¿No tienes una cuenta?{' '}
@@ -182,6 +235,37 @@ function AuthPage() {
             <Typography variant="h5" component="h2" gutterBottom sx={{ textAlign: 'center', color: 'text.primary' }}>
               Registrarse
             </Typography>
+            
+            {/* Google Login Button for Registration */}
+            <Button
+              onClick={handleGoogleLogin}
+              variant="outlined"
+              fullWidth
+              startIcon={<GoogleIcon />}
+              disabled={loading}
+              sx={{
+                mb: 2,
+                borderColor: '#db4437',
+                color: '#db4437',
+                '&:hover': {
+                  borderColor: '#c23321',
+                  backgroundColor: 'rgba(219, 68, 55, 0.04)',
+                },
+                borderRadius: 8,
+                textTransform: 'none',
+                fontSize: '1rem',
+                py: 1.5,
+              }}
+            >
+              Registrarse con Google
+            </Button>
+
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                o
+              </Typography>
+            </Divider>
+
             <TextField
               label="Nombre Completo"
               type="text"
@@ -190,6 +274,8 @@ function AuthPage() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              error={name && name.trim().length < 2}
+              helperText={name && name.trim().length < 2 ? 'El nombre debe tener al menos 2 caracteres' : ''}
             />
             <TextField
               label="Correo Electrónico"
@@ -199,6 +285,8 @@ function AuthPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
+              helperText={email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Ingresa un correo válido' : ''}
             />
             <TextField
               label="Contraseña"
@@ -208,6 +296,8 @@ function AuthPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={password && password.length < 6}
+              helperText={password && password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : ''}
             />
             <TextField
               label="Confirmar Contraseña"
@@ -217,15 +307,18 @@ function AuthPage() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              error={confirmPassword && password !== confirmPassword}
+              helperText={confirmPassword && password !== confirmPassword ? 'Las contraseñas no coinciden' : ''}
             />
             <Button
               type="submit"
               variant="contained"
               color="secondary"
               size="large"
+              disabled={loading || password !== confirmPassword || password.length < 6 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || name.trim().length < 2}
               sx={{ mt: 2, borderRadius: 8 }}
             >
-              Registrarse
+              {loading ? 'Registrando...' : 'Registrarse'}
             </Button>
             <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
               ¿Ya tienes una cuenta?{' '}
