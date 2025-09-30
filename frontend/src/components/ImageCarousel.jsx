@@ -102,11 +102,26 @@ function ImageCarousel() {
                 <Typography variant="body1" sx={{ mb: 3, fontSize: { xs: '0.85rem', sm: '1rem', md: '1.15rem', lg: '1.25rem' }}}>
                   {slide.description}
                 </Typography>
-                <Button variant="contained" color="secondary" component={Link} to={slide.link}sx={{
+                <Button 
+                  variant="contained" 
+                  component={Link} 
+                  to={slide.link}
+                  sx={{
                     px: { xs: 1.5, sm: 3 }, // Padding horizontal responsivo del botón
                     py: { xs: 0.6, sm: 1.2 }, // Padding vertical responsivo del botón
                     fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' }, // Font size responsivo del botón
-                  }}>
+                    backgroundColor: '#d4a5a5',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#e8c4c4',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+                    },
+                  }}
+                >
                   {slide.buttonText}
                 </Button>
               </Box>

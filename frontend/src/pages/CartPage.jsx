@@ -175,9 +175,23 @@ function CartPage() {
           </Typography>
           <Button
             variant="contained"
-            color="secondary"
             size="large"
-            sx={{ mt: 3, borderRadius: 8 }}
+            sx={{ 
+              mt: 3, 
+              borderRadius: 2,
+              backgroundColor: '#d4a5a5',
+            color: '#ffffff',
+            fontWeight: 600,
+            py: 1.5,
+            px: 4,
+            fontSize: '1.1rem',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: '#e8c4c4',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+              },
+            }}
             onClick={() => navigate('/products')}
           >
             Ir a Productos
@@ -187,7 +201,20 @@ function CartPage() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             {cartItems.map((item) => (
-              <Card key={item.id} sx={{ display: 'flex', mb: 2, p: 2, backgroundColor: 'background.paper', borderRadius: 2 }}>
+              <Card key={item.id} sx={{ 
+                display: 'flex', 
+                mb: 2, 
+                p: 2, 
+                background: 'linear-gradient(135deg, #dbb6ee, #b57edc)',
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+                },
+              }}>
                 <CardMedia
                   component="img"
                   sx={{ width: 100, height: 100, objectFit: 'contain', borderRadius: 1, mr: 2 }}
@@ -200,10 +227,10 @@ function CartPage() {
                     {item.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Precio Unitario: ${item.price.toFixed(2)}
+                    Precio Unitario: ${typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
                   </Typography>
                   <Typography variant="body1" color="secondary.main" sx={{ mt: 1 }}>
-                    Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                    Subtotal: ${typeof item.price === 'number' && typeof item.quantity === 'number' ? (item.price * item.quantity).toFixed(2) : (parseFloat(item.price || 0) * parseInt(item.quantity || 0)).toFixed(2)}
                   </Typography>
                 </CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
@@ -228,22 +255,35 @@ function CartPage() {
             ))}
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, backgroundColor: 'background.paper', borderRadius: 2 }}>
-              <Typography variant="h5" gutterBottom sx={{ color: 'text.primary' }}>
+            <Card sx={{ 
+              p: 3, 
+              background: 'linear-gradient(135deg, #dbb6ee, #b57edc)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ color: '#333333', textAlign: 'center', fontWeight: 700 }}>
                 Resumen del Pedido
               </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              <Divider sx={{ my: 2, backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                mb: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderRadius: 2,
+                p: 2,
+              }}>
+                <Typography variant="h6" sx={{ color: '#333333', fontWeight: 600 }}>
                   Total:
                 </Typography>
-                <Typography variant="h6" color="secondary.main">
+                <Typography variant="h6" sx={{ color: '#d4a5a5', fontWeight: 700, fontSize: '1.3rem' }}>
                   ${getCartTotal().toFixed(2)}
                 </Typography>
               </Box>
 
               {/* Nuevos campos para la información de pago */}
-              <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mt: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ color: '#333333', mt: 3, textAlign: 'center', fontWeight: 600 }}>
                 Información de Pago (Simulado):
               </Typography>
               <TextField
@@ -276,10 +316,27 @@ function CartPage() {
 
               <Button
                 variant="contained"
-                color="secondary"
                 fullWidth
                 size="large"
-                sx={{ mt: 2, borderRadius: 8 }}
+                sx={{ 
+                  mt: 2, 
+                  borderRadius: 2,
+                  backgroundColor: '#d4a5a5',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  py: 2,
+                  fontSize: '1.2rem',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#e8c4c4',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(212, 165, 165, 0.5)',
+                  },
+                  '&:disabled': {
+                    backgroundColor: '#ccc',
+                    color: '#999',
+                  },
+                }}
                 onClick={handleCheckout}
                 disabled={loadingCheckout || cartItems.length === 0} // Deshabilita durante la carga o si el carrito está vacío
               >

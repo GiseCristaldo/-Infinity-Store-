@@ -1,7 +1,7 @@
 // src/pages/CategoryDetailPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Container, Grid, Card, CardMedia, CardContent, Button, Snackbar } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Container, Grid, Card, CardMedia, CardContent, Button, Snackbar, Chip } from '@mui/material';
 import axios from 'axios';
 
 import { useCart } from '../context/CartContext.jsx'; // importamos el contexto del carrito
@@ -219,24 +219,35 @@ function CategoryDetailPage() {
                           ${product.price.toFixed(2)}
                         </Typography>
                       )}
-                      <Typography variant="h6" color="secondary.main">
-                        ${discountedPrice.toFixed(2)}
+                      <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 'bold' }}>
+                        ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
                       </Typography>
+                      {product.discount > 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                          ${typeof discountedPrice === 'number' ? discountedPrice.toFixed(2) : parseFloat(discountedPrice || 0).toFixed(2)}
+                        </Typography>
+                      )}
                     </Box>
                     <Typography variant="body2" color={product.stock > 0 ? 'text.secondary' : 'error.main'}>
                       Stock: {product.stock > 0 ? product.stock : 'Agotado'}
                     </Typography>
                   </CardContent>
-                  <Box sx={{ p: 2, pt: 0, height: '70px' }}>
+                  <Box sx={{ p: 2, pt: 0, height: '100px' }}>
                     <Button
                       variant="contained"
-                      color="secondary"
+                      color="primary"
                       fullWidth
                       sx={{
                         mb: 1,
+                        backgroundColor: '#d4a5a5',
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        transition: 'all 0.3s ease',
                         '&:hover': {
-                          backgroundColor: 'secondary.light',
-                          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
+                          backgroundColor: '#e8c4c4',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 12px rgba(212, 165, 165, 0.3)',
                         },
                       }}
                       component={Link}
@@ -246,10 +257,25 @@ function CategoryDetailPage() {
                     </Button>
                     <Button
                       variant="outlined"
-                      color="primary"
                       fullWidth
                       disabled={product.stock === 0}
                       onClick={() => handleAddToCart(product)}
+                      sx={{
+                        borderColor: '#d4a5a5',
+                        color: '#d4a5a5',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          borderColor: '#e8c4c4',
+                          backgroundColor: 'rgba(212, 165, 165, 0.1)',
+                          transform: 'translateY(-1px)',
+                        },
+                        '&:disabled': {
+                          borderColor: '#ccc',
+                          color: '#999',
+                        },
+                      }}
                     >
                       Añadir al Carrito
                     </Button>

@@ -193,10 +193,10 @@ function OrderDetailPage() {
                     Cantidad: {item.amount}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Precio Unitario: ${item.price.toFixed(2)}
+                    Precio Unitario: ${typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
                   </Typography>
-                  <Typography variant="body1" color="secondary.main" sx={{ fontWeight: 'bold', mt: 1 }}>
-                    Subtotal: ${(item.amount * item.price).toFixed(2)}
+                  <Typography variant="body2" color="text.secondary">
+                    Subtotal: ${typeof item.price === 'number' && typeof item.amount === 'number' ? (item.amount * item.price).toFixed(2) : (parseInt(item.amount || 0) * parseFloat(item.price || 0)).toFixed(2)}
                   </Typography>
                 </CardContent>
               </Card>

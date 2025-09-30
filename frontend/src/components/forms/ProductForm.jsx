@@ -87,7 +87,22 @@ const handleSubmit = (e) => {
 
       <Box sx={{ mt: 2, mb: 2 }}>
         {/* El input de archivo no tiene 'required', por eso lo validamos manualmente */}
-        <Button variant="contained" component="label">
+        <Button 
+          variant="contained" 
+          component="label"
+          sx={{
+            backgroundColor: '#d4a5a5',
+            color: '#ffffff',
+            fontWeight: 600,
+            borderRadius: 2,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: '#e8c4c4',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+            },
+          }}
+        >
           Subir Imagen
           <input type="file" hidden accept="image/*" onChange={handleFileChange} />
         </Button>
@@ -99,7 +114,27 @@ const handleSubmit = (e) => {
         )}
       </Box>
 
-      <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+      <Button 
+        type="submit" 
+        fullWidth 
+        variant="contained" 
+        sx={{ 
+          mt: 3, 
+          mb: 2,
+          backgroundColor: '#d4a5a5',
+          color: '#ffffff',
+          fontWeight: 600,
+          borderRadius: 2,
+          py: 1.5,
+          fontSize: '1.1rem',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            backgroundColor: '#e8c4c4',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+          },
+        }}
+      >
         {isEdit ? 'Guardar Cambios' : 'Crear Producto'}
       </Button>
     </Box>

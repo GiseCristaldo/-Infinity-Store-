@@ -2,38 +2,38 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    // Colores basados en tu imagen de referencia
+    // Paleta de colores suaves y elegantes inspirada en tonos rosados
     primary: {
-      main: '#7e57c2', // Un morado oscuro profundo para el fondo principal de la barra/app
-      light: '#6A0DAD', // Un morado ligeramente más claro
-      dark: '#2A004B',  // Un morado aún más oscuro
-      contrastText: '#ffffff', // Asegura que el texto sobre primary sea blanco
+      main: '#d4a5a5', // Rosa suave principal, similar a la imagen de referencia
+      light: '#e8c4c4', // Rosa muy claro para hover
+      dark: '#b8888a',  // Rosa más oscuro para contraste
+      contrastText: '#ffffff', // Texto blanco sobre colores primarios
     },
     secondary: {
-      main: '#a806ffff', // Un rosa/fucsia vibrante para acentos y botones de acción
-      light: '#6A0DAD',
-      dark: '#BF0064',
-      contrastText: '#ffffff', // Asegura que el texto sobre secondary sea blanco
+      main: '#c9a9a9', // Beige rosado para elementos secundarios
+      light: '#e0d0d0', // Beige muy claro para gradientes
+      dark: '#a08080',  // Beige oscuro
+      contrastText: '#5d4e4e', // Texto oscuro sobre colores secundarios claros
     },
     error: {
-      main: '#CF6679', // Un rojo/salmón para errores, siguiendo un esquema oscuro
+      main: '#d4a5a5', // Rosa suave para errores, manteniendo la armonía
     },
     warning: {
-      main: '#FFC107', // Amarillo/ámbar para advertencias
+      main: '#e8c4a0', // Beige cálido para advertencias
     },
     info: {
-      main: '#03DAC6', // Un turquesa para información
+      main: '#a5c4d4', // Azul suave para información
     },
     success: {
-      main: '#4CAF50', // Verde para éxito
+      main: '#a5d4a5', // Verde suave para éxito
     },
     background: {
-      default: 'linear-gradient(to right, rgba(238, 174, 202, 0.8), rgba(148, 187, 233, 0.8))', // Un fondo muy oscuro casi negro, para el cuerpo de la app
-      paper: '#7e57c2',   // Un morado oscuro para tarjetas y superficies elevadas
+      default: 'linear-gradient(135deg, #f8f4f4, #f0e8e8)', // Gradiente muy suave
+      paper: '#ffffff',   // Fondo blanco para tarjetas y superficies elevadas
     },
     text: {
-      primary: '#ffffff', // Gris muy claro para texto principal
-      secondary: '#ffffff', // Gris claro para texto secundario
+      primary: '#5d4e4e', // Texto marrón suave para mejor armonía
+      secondary: '#8a7575', // Texto gris rosado para elementos secundarios
     },
   },
    typography: {
@@ -43,37 +43,37 @@ const theme = createTheme({
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h1
       fontSize: '3rem',
       fontWeight: 700,
-      color: '#7e57c2'
+      color: '#d4a5a5' // Color principal actualizado con rosa suave
     },
     h2: { 
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h2
       fontSize: '2.5rem',
       fontWeight: 600,
-      color: '#ffffff'
+      color: '#5d4e4e' // Texto marrón suave para mejor armonía
     },
     h3: { 
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h3
       fontSize: '2rem',
       fontWeight: 500,
-      color: '#E0E0E0'
+      color: '#5d4e4e' // Texto marrón suave para mejor armonía
     },
     h4: { 
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h4
       fontSize: '1.75rem',
       fontWeight: 500,
-      color: '#E0E0E0'
+      color: '#5d4e4e' // Texto marrón suave para mejor armonía
     },
     h5: { 
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h5
       fontSize: '1.5rem',
       fontWeight: 500,
-      color: '#E0E0E0'
+      color: '#5d4e4e' // Texto marrón suave para mejor armonía
     },
     h6: { 
       fontFamily: '"Orbitron", sans-serif', // <-- Fuente para h6
       fontSize: '1.20rem',
       fontWeight: 600,
-      color: '#ffffff'
+      color: '#5d4e4e' // Texto marrón suave para mejor armonía
     },
   },
   components: {
@@ -90,6 +90,18 @@ const theme = createTheme({
           borderRadius: 8,
           textTransform: 'none',
           fontWeight: 600,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(212, 165, 165, 0.3)',
+          },
+        },
+        contained: {
+          backgroundColor: '#d4a5a5',
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: '#e8c4c4',
+          },
         },
       },
     },
@@ -104,6 +116,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
+          background: 'linear-gradient(135deg, #f8f4f4, #f0e8e8)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 8px 25px rgba(212, 165, 165, 0.2)',
+          },
         },
       },
     },

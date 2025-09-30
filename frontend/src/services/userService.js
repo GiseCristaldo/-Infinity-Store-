@@ -1,73 +1,79 @@
-import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api.js';
 
-const API_URL = 'http://localhost:3001/api/users';
-
-// Función para obtener el token de localStorage
-const getToken = () => {
+// Función para obtener todos los usuarios (solo admin)
+export const getUsers = async () => {
   const token = localStorage.getItem('token');
-  console.log('Token recuperado para userService:', token?.substring(0, 10) + '...');
-  return token;
-};
+  
+  const response = await fetch(API_ENDPOINTS.USERS.ADMIN, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-// Obtener todos los usuarios con paginación
-export const getUsers = async (page = 1, limit = 10) => {
-  const token = getToken();
-  if (!token) throw new Error('No token found');
-
-  try {
-    console.log('Fetching users, page:', page, 'limit:', limit);
-    const response = await axios.get(`${API_URL}/admin/users`, {
-      params: { page, limit },
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    console.log('Users response:', response.data);
-    return response.data; // Devuelve el objeto { users: [...], totalPages, ... }
-  } catch (error) {
-    console.error('Error fetching users:', error.response?.data || error);
-    throw error.response?.data || error;
+  if (!response.ok) {
+    throw new Error('Error al obtener usuarios');
   }
+
+  return response.json();
 };
 
-// Crear un nuevo usuario
+// Función para crear un nuevo usuario (solo admin)
 export const createUser = async (userData) => {
-  const token = getToken();
-  if (!token) throw new Error('No token found');
-
-  // Nota: El endpoint de creación de usuario es 'register', que es público.
-  // Si tuvieras un endpoint admin específico para crear usuarios, lo usarías aquí.
-  // Por ahora, usamos el de registro.
-  const response = await axios.post(`${API_URL}/register`, userData, {
+  const token = localStorage.getItem('token');
+  
+  const response = await fetch(API_ENDPOINTS.USERS.BASE, {
+    method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}` // Aunque sea público, es buena práctica enviarlo
-    }
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error('Error al crear usuario');
+  }
+
+  return response.json();
 };
 
-// Actualizar un usuario
-export const updateUser = async (userId, userData) => {
-  const token = getToken();
-  if (!token) throw new Error('No token found');
-
-  const response = await axios.put(`${API_URL}/admin/users/${userId}`, userData, {
+// Función para actualizar un usuario (solo admin)
+export const updateUser = async (id, userData) => {
+  const token = localStorage.getItem('token');
+  
+  const response = await fetch(API_ENDPOINTS.USERS.ADMIN_BY_ID(id), {
+    method: 'PUT',
     headers: {
-      'Authorization': `Bearer ${token}`
-    }
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error('Error al actualizar usuario');
+  }
+
+  return response.json();
 };
 
-// Eliminar un usuario
-export const deleteUser = async (userId) => {
-  const token = getToken();
-  if (!token) throw new Error('No token found');
-
-  const response = await axios.delete(`${API_URL}/admin/users/${userId}`, {
+// Función para eliminar un usuario (solo admin)
+export const deleteUser = async (id) => {
+  const token = localStorage.getItem('token');
+  
+  const response = await fetch(API_ENDPOINTS.USERS.ADMIN_BY_ID(id), {
+    method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${token}`
-    }
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
   });
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error('Error al eliminar usuario');
+  }
+
+  return response.json();
 };

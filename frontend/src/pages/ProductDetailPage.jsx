@@ -24,6 +24,16 @@ function ProductDetailPage() {
   const navigate = useNavigate();
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
+  // Estados para snackbar
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  // Estados para mensajes
+  const [newMessageText, setNewMessageText] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [messages, setMessages] = useState([]);
+
   const { addToCart, cartItems } = useCart();
   const { isAuthenticated } = useAuth();
 
@@ -89,7 +99,7 @@ const handleSendMessage = async () => {
     return;
   }
 if (!isAuthenticated){
-  navigate('/login');
+  navigate('/auth');
   return
 }
 setSendingMessage(true);
@@ -108,7 +118,22 @@ try {
 } finally {
   setSendingMessage(false);
 }
+};
 
+const fetchData = async () => {
+  try {
+    const response = await axios.get(`http://localhost:3001/api/products/${id}/messages`);
+    setMessages(response.data || []);
+  } catch (err) {
+    console.error('Error fetching messages:', err);
+  }
+};
+
+const handleSnackbarClose = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+  setSnackbarOpen(false);
 };
 
   if (loading) {
@@ -201,47 +226,145 @@ try {
 
         {/* Columna Derecha: Detalles del Producto */}
         <Grid item xs={12} md={6}>
-          <Box sx={{ p: { xs: 1, sm: 2 }, backgroundColor: 'background.paper', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'secondary.main', fontWeight: 700 }}>
+          <Box sx={{ 
+            p: { xs: 3, sm: 4 }, 
+            background: 'linear-gradient(135deg, #f8f4f4, #f0e8e8)',
+            borderRadius: 3,
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            boxShadow: '0 8px 32px rgba(212, 165, 165, 0.15)',
+            border: '1px solid rgba(212, 165, 165, 0.2)',
+          }}>
+            <Typography variant="h4" component="h1" gutterBottom sx={{ 
+              color: '#5d4e4e', 
+              fontWeight: 700,
+              mb: 3,
+              textAlign: 'left',
+              fontSize: { xs: '1.8rem', sm: '2.2rem' },
+            }}>
               {product.name}
             </Typography>
-            {/* Categoría: Estilos con Orbitron y color secundario.light */}
-            <Typography
-                variant="body1"
-                color="secondary.light"
-                sx={{
-                    mb: 2,
-                    fontWeight: 600,
-                    fontFamily: '"Orbitron", sans-serif',
-                }}
-            >
-                <b>Categoría:</b> {product.category ? product.category.name : 'N/A'}
-            </Typography>
-            <Typography variant="body1" color="text.primary" sx={{ mb: 3 }}>
-              {product.description}
-            </Typography>
+            
+            {/* Categoría con nuevo diseño */}
+            <Box sx={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 2,
+              p: 1.5,
+              mb: 2,
+              textAlign: 'center',
+            }}>
+              <Typography
+                  variant="body1"
+                  sx={{
+                      fontWeight: 600,
+                      fontFamily: '"Orbitron", sans-serif',
+                      color: '#7e57c2',
+                  }}
+              >
+                  <b>Categoría:</b> {product.category ? product.category.name : 'N/A'}
+              </Typography>
+            </Box>
+            
+            {/* Descripción con mejor formato */}
+            <Box sx={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 2,
+              p: 2,
+              mb: 3,
+              flexGrow: 1,
+            }}>
+              <Typography variant="body1" color="#333333" sx={{ 
+                lineHeight: 1.6,
+                fontSize: '1.1rem',
+              }}>
+                {product.description}
+              </Typography>
+            </Box>
 
-            <Typography variant="body2" color={product.stock > 0 ? 'text.secondary' : 'error.main'} sx={{ mb: 3 }}>
-              Stock: {product.stock > 0 ? product.stock : 'Agotado'}
-            </Typography>
+            {/* Stock con mejor visualización */}
+            <Box sx={{ 
+              backgroundColor: product.stock > 0 ? 'rgba(165, 212, 165, 0.2)' : 'rgba(212, 165, 165, 0.2)',
+              borderRadius: 2,
+              p: 1.5,
+              mb: 3,
+              textAlign: 'center',
+              border: `2px solid ${product.stock > 0 ? '#a5d4a5' : '#d4a5a5'}`,
+            }}>
+              <Typography variant="body1" color={product.stock > 0 ? '#5d7a5d' : '#7a5d5d'} sx={{ 
+                fontWeight: 600,
+                fontSize: '1.1rem',
+              }}>
+                Stock: {product.stock > 0 ? product.stock : 'Agotado'}
+              </Typography>
+            </Box>
+
+            {/* Precios con el nuevo diseño */}
+            <Box sx={{ mb: 3 }}>
+              {product.ofert && product.discount > 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through', mb: 1 }}>
+                  Precio original: ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
+                </Typography>
+              )}
+              <Typography variant="h4" sx={{ color: '#d4a5a5', fontWeight: 'bold', mb: 1 }}>
+                ${product.ofert && product.discount > 0 
+                  ? (typeof discountedPrice === 'number' ? discountedPrice.toFixed(2) : parseFloat(discountedPrice || 0).toFixed(2))
+                  : (typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2))
+                }
+              </Typography>
+              {product.ofert && product.discount > 0 && (
+                <Typography variant="body1" sx={{ color: '#a5d4a5', fontWeight: 600 }}>
+                  ¡Ahorra ${(typeof product.price === 'number' ? product.price : parseFloat(product.price || 0)) - (typeof discountedPrice === 'number' ? discountedPrice : parseFloat(discountedPrice || 0)).toFixed(2)}!
+                </Typography>
+              )}
+            </Box>
 
             <Button
               variant="contained"
-              color="primary" // Changed to primary for contrast
               fullWidth
               disabled={product.stock === 0}
               onClick={() => handleAddToCart(product)}
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                backgroundColor: '#d4a5a5',
+                color: '#ffffff',
+                fontWeight: 600,
+                borderRadius: 2,
+                py: 1.5,
+                fontSize: '1.1rem',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#e8c4c4',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+                },
+                '&:disabled': {
+                  backgroundColor: '#ccc',
+                  color: '#999',
+                },
+              }}
             >
-              Añadir al Carrito
+              {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
             </Button>
 
             <Button
               variant="outlined"
-              color="secondary" // Changed to secondary for contrast
               fullWidth
               component={Link}
-              to="/products" // Enlace para volver al catálogo general
+              to="/products"
+              sx={{
+                borderColor: '#d4a5a5',
+                color: '#d4a5a5',
+                fontWeight: 600,
+                borderRadius: 2,
+                py: 1.5,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#e8c4c4',
+                  backgroundColor: 'rgba(212, 165, 165, 0.1)',
+                  transform: 'translateY(-1px)',
+                },
+              }}
             >
               Volver al Catálogo
             </Button>

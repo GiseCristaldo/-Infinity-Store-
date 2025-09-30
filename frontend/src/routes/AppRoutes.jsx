@@ -6,6 +6,7 @@ import { Container, Box, CircularProgress, Typography } from '@mui/material';
 import ResponsiveAppBar from '../components/ResponsiveAppBar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import RequireAdmin from '../components/auth/RequireAdmin.jsx';
+import RequireAuth from '../components/auth/RequireAuth.jsx';
 
 // --- Páginas Públicas ---
 import HomePage from '../pages/HomePage.jsx';
@@ -17,6 +18,7 @@ import CategoryDetailPage from '../pages/CategoryDetailPage.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
 import OrdersPage from '../pages/OrdersPage.jsx';
 import OrderDetailPage from '../pages/OrderDetailPage.jsx';
+import AuthSuccessPage from '../pages/AuthSuccessPage.jsx';
 
 // --- Páginas de Administración ---
 import AdminLayout from '../pages/admin/AdminLayout.jsx';
@@ -42,6 +44,21 @@ const PublicLayout = () => (
   </>
 );
 
+// Layout para páginas que requieren autenticación
+const AuthenticatedLayout = () => (
+  <RequireAuth>
+    <ResponsiveAppBar />
+    <Container sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
+      <Outlet />
+    </Container>
+    <Box component="footer" sx={{ p: 2, mt: 'auto', backgroundColor: 'primary.dark', color: 'white', textAlign: 'center' }}>
+      <Typography variant="body2">
+        © {new Date().getFullYear()} Infinity Store. Todos los derechos reservados.
+      </Typography>
+    </Box>
+  </RequireAuth>
+);
+
 function AppRoutes() {
   const { loading: authLoading } = useAuth();
 
@@ -56,21 +73,26 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* --- Rutas públicas que usarán el layout de arriba --- */}
+      {/* --- Rutas públicas --- */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/success" element={<AuthSuccessPage />} />
         <Route path="/cart" element={<CartPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/mis-ordenes" element={<OrdersPage />} />
-        <Route path="/mis-ordenes/:orderId" element={<OrderDetailPage />} />
         <Route path="/category/:id" element={<CategoryDetailPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Route>
 
-      {/* --- Rutas de Administración (quedan separadas y con su propio layout) --- */}
+      {/* --- Rutas que requieren autenticación --- */}
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/mis-ordenes" element={<OrdersPage />} />
+        <Route path="/mis-ordenes/:orderId" element={<OrderDetailPage />} />
+      </Route>
+
+      {/* --- Rutas de Administración --- */}
       <Route 
         path="/admin" 
         element={

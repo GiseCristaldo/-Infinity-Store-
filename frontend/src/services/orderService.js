@@ -3,13 +3,13 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3001/api';
 
-// Obtener todas las órdenes (paginadas)
+// Obtener todas las órdenes (paginadas) - Solo para administradores
 export const getOrders = async (page = 1, limit = 10) => {
   const token = localStorage.getItem('token');
   try {
     console.log('Fetching orders with token:', token?.substring(0, 10) + '...');
-    // Usamos la ruta correcta según el backend
-    const response = await axios.get(`${API_URL}/orders?page=${page}&limit=${limit}`, {
+    // Usamos la ruta correcta para administradores según el backend
+    const response = await axios.get(`${API_URL}/orders/admin?page=${page}&limit=${limit}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     console.log('Orders response:', response.data);
@@ -37,7 +37,7 @@ export const getOrderById = async (id) => {
 export const updateOrderStatus = async (id, status) => {
   const token = localStorage.getItem('token');
   try {
-    const response = await axios.patch(`${API_URL}/orders/${id}/status`, 
+    const response = await axios.put(`${API_URL}/orders/${id}/status`, 
       { status },
       { headers: { 'Authorization': `Bearer ${token}` }}
     );
