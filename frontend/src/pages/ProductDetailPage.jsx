@@ -7,10 +7,14 @@ import { Typography, Box, CircularProgress, Alert, Container, Grid, CardMedia, C
   ListItemText,
   InputAdornment, } from '@mui/material'; 
 import SendIcon from '@mui/icons-material/Send';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import axios from 'axios';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import CategoryFilter from '../components/CategoryFilter.jsx';
+import { formatPrice, isValidPrice } from '../utils/priceUtils.js';
+import { COLORS, BUTTON_STYLES, CARD_STYLES } from '../utils/colorConstants.js';
 
 /**
  * Página de detalle de producto.
@@ -23,6 +27,9 @@ function ProductDetailPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  // Estados para carrusel de imágenes
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Estados para snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -41,19 +48,13 @@ function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        setError(null);
         const response = await axios.get(`http://localhost:3001/api/products/${id}`);
         setProduct(response.data);
-        if (response.data && response.data.categoryId) {
-            setSelectedCategoryId(response.data.categoryId);
-        }
+        // Resetear el índice de imagen cuando se carga un nuevo producto
+        setCurrentImageIndex(0);
       } catch (err) {
-        console.error('Error fetching product:', err);
-        if (err.response && err.response.status === 404) {
-          setError('Producto no encontrado.');
-        } else {
-          setError('No se pudo cargar el producto. Inténtalo de nuevo más tarde.');
-        }
+        console.error('Error al obtener el producto:', err);
+        setError('No se pudo cargar el producto. Por favor, inténtalo de nuevo.');
       } finally {
         setLoading(false);
       }
@@ -86,55 +87,50 @@ function ProductDetailPage() {
     setSnackbarOpen(true);
   };
 
-
   const handleSelectCategory = (categoryId) => {
+    setSelectedCategoryId(categoryId);
     if (categoryId) {
-        navigate(`/products?category=${categoryId}`);
+      navigate(`/category/${categoryId}`);
     } else {
-        navigate('/products');
+      navigate('/products');
     }
   };
-const handleSendMessage = async () => {
-  if (!newMessageText.trim()){
-    return;
-  }
-if (!isAuthenticated){
-  navigate('/auth');
-  return
-}
-setSendingMessage(true);
-try {
-  await axios.post(`http://localhost:3001/api/products/${id}/messages`, {
-    text: newMessageText,
-  }, {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
     }
-  });
-  setNewMessageText('');
-  fetchData();
-} catch(err){
-  console.error('Error al enviar el mensaje:', err);
-} finally {
-  setSendingMessage(false);
-}
-};
+    setSnackbarOpen(false);
+  };
 
-const fetchData = async () => {
-  try {
-    const response = await axios.get(`http://localhost:3001/api/products/${id}/messages`);
-    setMessages(response.data || []);
-  } catch (err) {
-    console.error('Error fetching messages:', err);
-  }
-};
+  // Funciones para el carrusel de imágenes
+  const handlePreviousImage = () => {
+    if (product?.images && product.images.length > 1) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === 0 ? product.images.length - 1 : prevIndex - 1
+      );
+    }
+  };
 
-const handleSnackbarClose = (event, reason) => {
-  if (reason === 'clickaway') {
-    return;
-  }
-  setSnackbarOpen(false);
-};
+  const handleNextImage = () => {
+    if (product?.images && product.images.length > 1) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === product.images.length - 1 ? 0 : prevIndex + 1
+      );
+    }
+  };
+
+  const handleThumbnailClick = (index) => {
+    setCurrentImageIndex(index);
+  };
+
+  // Obtener la imagen actual para mostrar
+  const getCurrentImage = () => {
+    if (product?.images && product.images.length > 0) {
+      return product.images[currentImageIndex]?.url || product.imagenPath;
+    }
+    return product?.imagenPath || "https://placehold.co/600x400/4a4a4a/f0f0f0?text=No+Image";
+  };
 
   if (loading) {
     return (
@@ -166,12 +162,8 @@ const handleSnackbarClose = (event, reason) => {
       </Box>
     );
   }
-   // Calcula el precio con descuento
-  const discountedPrice = product.ofert && product.discount > 0
-    ? product.price * (1 - product.discount / 100)
-    : product.price;
 
-    return (
+  return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Chips de Categorías en la parte superior */}
       <Box sx={{ mb: 4 }}>
@@ -181,63 +173,199 @@ const handleSnackbarClose = (event, reason) => {
         />
       </Box>
 
-      <Grid container spacing={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Grid container spacing={4} sx={{ 
+        display: 'grid !important',
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        gap: 4,
+        alignItems: 'start',
+        minHeight: '600px'
+      }}>
         {/* Columna Izquierda: Imagen del Producto */}
-        <Grid item xs={12} md={6}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: { xs: '300px', sm: '400px', md: '500px' }, // Altura responsiva para la imagen
-              backgroundColor: 'background.paper',
-              borderRadius: 2,
-              overflow: 'hidden', // Asegura que la imagen no se salga del contenedor
-              position: 'relative', // Para posicionar el chip de oferta
-            }}
-          >
-            {product.ofert && (
-              <Chip
-                label="¡OFERTA!"
-                color="secondary"
-                size="medium" // Tamaño un poco más grande para el detalle
-                sx={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 16,
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  zIndex: 1,
-                }}
-              />
-            )}
-            <img
-              src={product.imagenURL || "https://placehold.co/600x400/4a4a4a/f0f0f0?text=No+Image"}
-              alt={product.name}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain', // Asegura que la imagen se ajuste sin recortarse
+        <Grid item sx={{ 
+          gridColumn: { xs: '1', md: '1' }
+        }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Imagen Principal */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: { xs: '350px', md: '500px', lg: '600px' },
+                width: '100%',
+                backgroundColor: COLORS.background.paper,
+                borderRadius: 2,
+                overflow: 'hidden',
+                position: 'relative',
+                ...CARD_STYLES.base,
+                ...CARD_STYLES.hover,
               }}
-              onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
-            />
+            >
+              {product.ofert && (
+                <Chip
+                  label="¡OFERTA!"
+                  color="secondary"
+                  size="medium"
+                  sx={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    zIndex: 1,
+                    backgroundColor: COLORS.error,
+                    color: COLORS.primary.contrastText,
+                  }}
+                />
+              )}
+              
+              {/* Botones de navegación del carrusel */}
+              {product?.images && product.images.length > 1 && (
+                <>
+                  <IconButton
+                    onClick={handlePreviousImage}
+                    sx={{
+                      position: 'absolute',
+                      left: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      zIndex: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      },
+                    }}
+                  >
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                  
+                  <IconButton
+                    onClick={handleNextImage}
+                    sx={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      color: 'white',
+                      zIndex: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      },
+                    }}
+                  >
+                    <ArrowForwardIosIcon />
+                  </IconButton>
+                </>
+              )}
+              
+              <img
+                src={getCurrentImage()}
+                alt={product.name}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  padding: '16px',
+                }}
+                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
+              />
+              
+              {/* Indicador de imagen actual */}
+              {product?.images && product.images.length > 1 && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    zIndex: 2,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'white', fontSize: '0.875rem' }}>
+                    {currentImageIndex + 1} / {product.images.length}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+            
+            {/* Miniaturas */}
+            {product?.images && product.images.length > 1 && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  overflowX: 'auto',
+                  pb: 1,
+                  '&::-webkit-scrollbar': {
+                    height: 6,
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    borderRadius: 3,
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: COLORS.primary.main,
+                    borderRadius: 3,
+                  },
+                }}
+              >
+                {product.images.map((image, index) => (
+                  <Box
+                    key={image.id || index}
+                    onClick={() => handleThumbnailClick(index)}
+                    sx={{
+                      minWidth: 80,
+                      height: 80,
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: currentImageIndex === index ? `3px solid ${COLORS.primary.main}` : '2px solid transparent',
+                      transition: 'border-color 0.2s ease',
+                      '&:hover': {
+                        border: `3px solid ${COLORS.primary.light}`,
+                      },
+                    }}
+                  >
+                    <img
+                      src={image.url}
+                      alt={`${product.name} - imagen ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/80x80/4a4a4a/f0f0f0?text=No+Image"; }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Box>
         </Grid>
 
         {/* Columna Derecha: Detalles del Producto */}
-        <Grid item xs={12} md={6}>
+        <Grid item sx={{ 
+          gridColumn: { xs: '1', md: '2' }
+        }}>
           <Box sx={{ 
-            p: { xs: 3, sm: 4 }, 
-            background: 'linear-gradient(135deg, #f8f4f4, #f0e8e8)',
-            borderRadius: 3,
-            height: '100%', 
+            p: { xs: 2, md: 3, lg: 4 }, 
+            ...CARD_STYLES.base,
+            width: '100%',
+            minHeight: { xs: '350px', md: '500px', lg: '600px' },
             display: 'flex', 
             flexDirection: 'column',
-            boxShadow: '0 8px 32px rgba(212, 165, 165, 0.15)',
-            border: '1px solid rgba(212, 165, 165, 0.2)',
+            justifyContent: 'flex-start',
+            gap: 2,
           }}>
+            {/* Título del producto */}
             <Typography variant="h4" component="h1" gutterBottom sx={{ 
-              color: '#5d4e4e', 
+              color: COLORS.text.primary, 
               fontWeight: 700,
               mb: 3,
               textAlign: 'left',
@@ -246,50 +374,55 @@ const handleSnackbarClose = (event, reason) => {
               {product.name}
             </Typography>
             
-            {/* Categoría con nuevo diseño */}
+            {/* Categoría */}
             <Box sx={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: COLORS.background.overlay,
               borderRadius: 2,
               p: 1.5,
               mb: 2,
               textAlign: 'center',
             }}>
               <Typography
-                  variant="body1"
-                  sx={{
-                      fontWeight: 600,
-                      fontFamily: '"Orbitron", sans-serif',
-                      color: '#7e57c2',
-                  }}
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  fontFamily: '"Orbitron", sans-serif',
+                  color: '#7e57c2',
+                }}
               >
-                  <b>Categoría:</b> {product.category ? product.category.name : 'N/A'}
+                <b>Categoría:</b> {product.category ? product.category.name : 'N/A'}
               </Typography>
             </Box>
             
-            {/* Descripción con mejor formato */}
+            {/* Descripción - NO CAMBIA DE POSICIÓN */}
             <Box sx={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: COLORS.background.overlay,
               borderRadius: 2,
               p: 2,
               mb: 3,
-              flexGrow: 1,
+              flexGrow: 1, // Toma el espacio disponible
+              minHeight: '120px', // Altura mínima para consistencia
+              display: 'flex',
+              alignItems: 'flex-start', // Alinea el texto al inicio
             }}>
-              <Typography variant="body1" color="#333333" sx={{ 
+              <Typography variant="body1" color={COLORS.text.light} sx={{ 
                 lineHeight: 1.6,
                 fontSize: '1.1rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}>
                 {product.description}
               </Typography>
             </Box>
 
-            {/* Stock con mejor visualización */}
+            {/* Stock */}
             <Box sx={{ 
               backgroundColor: product.stock > 0 ? 'rgba(165, 212, 165, 0.2)' : 'rgba(212, 165, 165, 0.2)',
               borderRadius: 2,
               p: 1.5,
               mb: 3,
               textAlign: 'center',
-              border: `2px solid ${product.stock > 0 ? '#a5d4a5' : '#d4a5a5'}`,
+              border: `2px solid ${product.stock > 0 ? COLORS.success : COLORS.error}`,
             }}>
               <Typography variant="body1" color={product.stock > 0 ? '#5d7a5d' : '#7a5d5d'} sx={{ 
                 fontWeight: 600,
@@ -299,79 +432,62 @@ const handleSnackbarClose = (event, reason) => {
               </Typography>
             </Box>
 
-            {/* Precios con el nuevo diseño */}
+            {/* Precios */}
             <Box sx={{ mb: 3 }}>
-              {product.ofert && product.discount > 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through', mb: 1 }}>
-                  Precio original: ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
-                </Typography>
-              )}
-              <Typography variant="h4" sx={{ color: '#d4a5a5', fontWeight: 'bold', mb: 1 }}>
-                ${product.ofert && product.discount > 0 
-                  ? (typeof discountedPrice === 'number' ? discountedPrice.toFixed(2) : parseFloat(discountedPrice || 0).toFixed(2))
-                  : (typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2))
-                }
+              <Typography variant="h4" sx={{ color: COLORS.primary.main, fontWeight: 'bold', mb: 1 }}>
+                {formatPrice(product.price)}
               </Typography>
-              {product.ofert && product.discount > 0 && (
-                <Typography variant="body1" sx={{ color: '#a5d4a5', fontWeight: 600 }}>
-                  ¡Ahorra ${(typeof product.price === 'number' ? product.price : parseFloat(product.price || 0)) - (typeof discountedPrice === 'number' ? discountedPrice : parseFloat(discountedPrice || 0)).toFixed(2)}!
-                </Typography>
-              )}
             </Box>
 
-            <Button
-              variant="contained"
-              fullWidth
-              disabled={product.stock === 0}
-              onClick={() => handleAddToCart(product)}
-              sx={{ 
-                mb: 2,
-                backgroundColor: '#d4a5a5',
-                color: '#ffffff',
-                fontWeight: 600,
-                borderRadius: 2,
-                py: 1.5,
-                fontSize: '1.1rem',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: '#e8c4c4',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
-                },
-                '&:disabled': {
-                  backgroundColor: '#ccc',
-                  color: '#999',
-                },
-              }}
-            >
-              {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
-            </Button>
+            {/* Botones */}
+            <Box sx={{ mt: 'auto' }}>
+              <Button
+                variant="contained"
+                fullWidth
+                disabled={product.stock === 0}
+                onClick={() => handleAddToCart(product)}
+                sx={{ 
+                  mb: 2,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  ...BUTTON_STYLES.primary,
+                  '&:disabled': {
+                    backgroundColor: '#ccc',
+                    color: '#999',
+                  },
+                }}
+              >
+                {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
+              </Button>
 
-            <Button
-              variant="outlined"
-              fullWidth
-              component={Link}
-              to="/products"
-              sx={{
-                borderColor: '#d4a5a5',
-                color: '#d4a5a5',
-                fontWeight: 600,
-                borderRadius: 2,
-                py: 1.5,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  borderColor: '#e8c4c4',
-                  backgroundColor: 'rgba(212, 165, 165, 0.1)',
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              Volver al Catálogo
-            </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                component={Link}
+                to="/products"
+                sx={{
+                  py: 1.5,
+                  ...BUTTON_STYLES.outlined,
+                }}
+              >
+                Volver al Catálogo
+              </Button>
+            </Box>
           </Box>
         </Grid>
       </Grid>
 
+      {/* Snackbar para notificaciones */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

@@ -29,13 +29,49 @@ export const createProduct = async (productData) => {
   const token = getToken();
   if (!token) throw new Error('No token found');
 
-  const response = await axios.post(API_URL, productData, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
-  return response.data;
+  // Si hay imágenes nuevas, usar FormData para enviar archivos
+  if (productData.newImages && productData.newImages.length > 0) {
+    const formData = new FormData();
+    
+    // Agregar datos del producto
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('price', productData.price);
+    formData.append('stock', productData.stock);
+    formData.append('categoryId', productData.categoryId);
+    
+    // Agregar archivos de imagen
+    productData.newImages.forEach((file, index) => {
+      formData.append('images', file);
+      // Marcar cuál es la imagen principal
+      if (productData.images[index]?.isPrimary) {
+        formData.append('primaryImageIndex', index);
+      }
+    });
+
+    const response = await axios.post(`${API_URL}/with-files`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    return response.data;
+  } else {
+    // Fallback para productos sin imágenes (aunque no debería pasar)
+    const response = await axios.post(API_URL, {
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      stock: productData.stock,
+      categoryId: productData.categoryId
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    return response.data;
+  }
 };
 
 // Actualizar un producto (ruta protegida)
@@ -43,13 +79,57 @@ export const updateProduct = async (id, productData) => {
   const token = getToken();
   if (!token) throw new Error('No token found');
 
-  const response = await axios.put(`${API_URL}/${id}`, productData, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+  // Si hay imágenes nuevas, usar FormData para enviar archivos
+  if (productData.newImages && productData.newImages.length > 0) {
+    const formData = new FormData();
+    
+    // Agregar datos del producto
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('price', productData.price);
+    formData.append('stock', productData.stock);
+    formData.append('categoryId', productData.categoryId);
+    
+    // Agregar información de imágenes existentes
+    if (productData.images) {
+      formData.append('existingImages', JSON.stringify(productData.images.filter(img => img.isExisting)));
     }
-  });
-  return response.data;
+    
+    // Agregar archivos de imagen nuevos
+    productData.newImages.forEach((file) => {
+      formData.append('images', file);
+    });
+
+    // Encontrar cuál imagen debe ser principal
+    const primaryImageIndex = productData.images.findIndex(img => img.isPrimary);
+    if (primaryImageIndex !== -1) {
+      formData.append('primaryImageIndex', primaryImageIndex);
+    }
+
+    const response = await axios.put(`${API_URL}/${id}/with-files`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    return response.data;
+  } else {
+    // Solo actualizar datos del producto sin cambiar imágenes
+    const response = await axios.put(`${API_URL}/${id}`, {
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      stock: productData.stock,
+      categoryId: productData.categoryId,
+      existingImages: productData.images ? JSON.stringify(productData.images.filter(img => img.isExisting)) : undefined
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    return response.data;
+  }
 };
 
 // Eliminar un producto (ruta protegida)

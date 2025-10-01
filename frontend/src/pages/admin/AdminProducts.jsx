@@ -58,20 +58,14 @@ function AdminProducts() {
   };
   const handleSubmitForm = async (formData) => {
     try {
-      const dataToSend = {
-         name: formData.name,
-        description: formData.description,
-         price: parseFloat(formData.price), // Convertimos el string a número decimal
-        stock: parseInt(formData.stock, 10), // Convertimos el string a entero
-        imagenURL: formData.image, // Renombramos 'image' a 'imagenURL'
-        categoryId: formData.categoryId,
-      };
       let message = '';
       if (currentProduct) {
-        await updateProduct(currentProduct.id, dataToSend);
+        // Actualizar producto existente
+        await updateProduct(currentProduct.id, formData);
         message = '¡Producto actualizado exitosamente!';
       } else {
-        await createProduct(dataToSend);
+        // Crear nuevo producto
+        await createProduct(formData);
         message = '¡Producto creado exitosamente!';
       }
       handleCloseForm();

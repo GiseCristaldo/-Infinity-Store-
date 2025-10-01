@@ -4,7 +4,8 @@ import { Category } from './Category.js';
 import { Product } from './Product.js';
 import { User } from './User.js'; 
 import { Order } from './Order.js'; 
-import { OrderDetail } from './OrderDetail.js'; 
+import { OrderDetail } from './OrderDetail.js';
+import { File } from './File.js'; 
 
 
 // --- Definición de Relaciones (Asociaciones) ---
@@ -53,6 +54,17 @@ OrderDetail.belongsTo(Product, {
   as: 'product'
 });
 
+// Relación entre Product y File: Un producto puede tener muchos archivos/imágenes (1:N)
+Product.hasMany(File, {
+  foreignKey: 'productId', // Clave foránea en la tabla 'files' que apunta al ID del producto
+  as: 'files'
+});
+
+File.belongsTo(Product, {
+  foreignKey: 'productId', // Clave foránea en la tabla 'files' que apunta al ID del producto
+  as: 'product'
+});
+
 // Exportar todos los modelos y la instancia de sequelize
 export {
   sequelize,
@@ -61,4 +73,5 @@ export {
   User, // 
   Order, 
   OrderDetail,
+  File,
 };

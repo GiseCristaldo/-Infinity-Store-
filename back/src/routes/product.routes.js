@@ -4,7 +4,9 @@ import {
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  createProductWithFiles,
+  updateProductWithFiles
 } from '../controllers/productController.js';
 
 import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
@@ -19,9 +21,11 @@ router.get('/:id', getProductById);
 
 // Rutas protegidas para administradores (CRUD de productos)
 
-// AHORA LAS RUTAS SON MÁS SIMPLES
-// Las llamadas de subida de imagen se manejan en las rutas POST y PUT
+// Rutas para productos con múltiples archivos
+router.post('/with-files', verifyToken, isAdmin, upload.array('images', 5), createProductWithFiles);
+router.put('/:id/with-files', verifyToken, isAdmin, upload.array('images', 5), updateProductWithFiles);
 
+// Rutas originales para compatibilidad (imagen única)
 router.post('/', verifyToken, isAdmin, upload.single('image'), createProduct);    
 router.put('/:id', verifyToken, isAdmin, upload.single('image'), updateProduct);  
 router.delete('/:id', verifyToken, isAdmin, deleteProduct); 
@@ -41,12 +45,19 @@ router.post('/upload/multiple/:id', verifyToken, isAdmin, upload.array('images',
         return res.status(400).json({ message: 'No se subieron archivos.' });
     }
 
-    const imagePaths = req.files.map(file => file.path);
-    // Aquí podrías guardar las rutas en una tabla relacionada si el producto admite múltiples imágenes
+    // Aquí podrías agregar lógica adicional para manejar la subida
+    // Por ahora, simplemente devolvemos éxito
+    res.json({ 
+        message: 'Archivos subidos exitosamente.',
+        files: req.files.map(file => ({
+            filename: file.filename,
+            originalName: file.originalname,
+            path: file.path
+        }))
+    });
 
-    res.status(200).json({ message: 'Imágenes subidas exitosamente.', imagePaths });
   } catch (error) {
-    console.error('Error al subir las imágenes:', error);
+    console.error('Error al subir archivos:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });

@@ -155,12 +155,12 @@ function ProductsPage() {
           }}
         > 
           {products.map((product) => {
-            const discountedPrice = product.oferta && product.descuento > 0
-              ? product.price * (1 - product.descuento / 100)
-              : product.price;
+            // Eliminar cálculo de descuentos
+            // const discountedPrice = product.oferta && product.descuento > 0
+            //   ? product.price * (1 - product.descuento / 100)
+            //   : product.price;
 
             return (
-              // Cada tarjeta de producto ahora es un Box o directamente el Card
               <Card 
                 key={product.id} 
                 sx={{
@@ -254,17 +254,14 @@ function ProductsPage() {
                     <Box sx={{ mt: 'auto' }}>
                       {product.ofert && product.discount > 0 && (
                         <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                          ${product.price.toFixed(2)}
+                          {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : `$${parseFloat(product.price || 0).toFixed(2)}`}
                         </Typography>
                       )}
-                      <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 'bold' }}>
-                        ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
-                      </Typography>
-                      {product.discount > 0 && (
-                        <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                          ${typeof discountedPrice === 'number' ? discountedPrice.toFixed(2) : parseFloat(discountedPrice || 0).toFixed(2)}
+                      <Box sx={{ mt: 'auto' }}>
+                        <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 'bold' }}>
+                          {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : `$${parseFloat(product.price || 0).toFixed(2)}`}
                         </Typography>
-                      )}
+                      </Box>
                     </Box>
                     <Typography variant="body2" color={product.stock > 0 ? 'text.secondary' : 'error.main'}>
                       Stock: {product.stock > 0 ? product.stock : 'Agotado'}

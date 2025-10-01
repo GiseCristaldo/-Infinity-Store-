@@ -88,7 +88,11 @@ export const CartProvider = ({ children }) => {
 
   // Calcular el total monetario del carrito
   const getCartTotal = useCallback(() => {
-    return cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return cartItems.reduce((acc, item) => {
+      const price = typeof item.price === 'number' ? item.price : parseFloat(item.price || 0);
+      const quantity = typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity || 0);
+      return acc + (price * quantity);
+    }, 0);
   }, [cartItems]);
 
   // 3. Proveer el estado y las funciones a los componentes hijos

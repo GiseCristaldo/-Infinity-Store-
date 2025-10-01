@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import productRoutes from './routes/product.routes.js'; 
 import userRoutes from './routes/user.routes.js'; // <-- NUEVA IMPORTACIÓN
+import fileRoutes from './routes/file.routes.js';
 
 dotenv.config();
 
@@ -18,7 +19,9 @@ const app = express();
 const corsOptions = {
   origin: [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://localhost:5173',
+    'https://localhost:5174',
     'https://infinity-store-frontend.vercel.app',
     'https://*.vercel.app'
   ],
@@ -81,6 +84,9 @@ app.use('/api/categories', categoryRoutes);
 
 // 5. GESTIÓN DE PEDIDOS: Prefijo /api/orders
 app.use('/api/orders', orderRoutes);
+
+// 6. GESTIÓN DE ARCHIVOS: Prefijo /api/files
+app.use('/api/files', fileRoutes);
 
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {

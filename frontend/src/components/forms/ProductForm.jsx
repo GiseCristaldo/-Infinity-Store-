@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, Typography, Avatar } from '@mui/material';
+import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, Typography, Avatar, Grid, IconButton, Chip } from '@mui/material';
+import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { getAllCategories } from '../../services/categoryService';
 
 function ProductForm({ onSubmit, initialData = {}, isEdit = false }) {
   const [formData, setFormData] = useState({});
   const [categories, setCategories] = useState([]);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
 
   // Cargar categorías cuando el componente se monta
   useEffect(() => {
@@ -18,50 +20,124 @@ function ProductForm({ onSubmit, initialData = {}, isEdit = false }) {
 
   // Rellenar el formulario con datos iniciales cuando se abre para editar
   useEffect(() => {
-    const imageUrlFromDb = initialData.imagenURL || initialData.image || null;
-
     setFormData({
       name: initialData.name || '',
       description: initialData.description || '',
       price: initialData.price || '',
       stock: initialData.stock || '',
       categoryId: initialData.categoryId || '',
-     image: imageUrlFromDb, // Usamos la URL de la DB
     });
-    setImagePreview(imageUrlFromDb); 
-  }, [initialData]);
+
+    // Si estamos editando y hay imágenes existentes, cargarlas
+    if (isEdit && initialData.images && initialData.images.length > 0) {
+      setImagePreviews(initialData.images.map(img => ({
+        id: img.id,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        isExisting: true
+      })));
+    } else if (isEdit && (initialData.imagenURL || initialData.image)) {
+      // Compatibilidad con imagen única legacy
+      setImagePreviews([{
+        url: initialData.imagenURL || initialData.image,
+        isPrimary: true,
+        isExisting: true
+      }]);
+    }
+  }, [initialData, isEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Manejar la selección de un archivo de imagen
+  // Manejar la selección de múltiples archivos de imagen
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Validar que no exceda el límite de 5 imágenes
+    const totalImages = imagePreviews.length + files.length;
+    if (totalImages > 5) {
+      alert('Máximo 5 imágenes permitidas por producto');
+      return;
+    }
+
+    const newImages = [];
+    const newPreviews = [];
+
+    files.forEach((file, index) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // El resultado (reader.result) es la imagen en formato Base64
-        setFormData(prev => ({ ...prev, image: reader.result }));
-        setImagePreview(reader.result);
+        const imageData = {
+          file: file,
+          url: reader.result,
+          isPrimary: imagePreviews.length === 0 && index === 0, // Primera imagen es principal
+          isExisting: false
+        };
+        
+        newImages.push(file);
+        newPreviews.push(imageData);
+
+        // Cuando todas las imágenes se han procesado
+        if (newPreviews.length === files.length) {
+          setSelectedImages(prev => [...prev, ...newImages]);
+          setImagePreviews(prev => [...prev, ...newPreviews]);
+        }
       };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  // Eliminar una imagen
+  const handleRemoveImage = (indexToRemove) => {
+    setImagePreviews(prev => {
+      const newPreviews = prev.filter((_, index) => index !== indexToRemove);
+      
+      // Si eliminamos la imagen principal, hacer que la primera sea principal
+      if (prev[indexToRemove]?.isPrimary && newPreviews.length > 0) {
+        newPreviews[0].isPrimary = true;
+      }
+      
+      return newPreviews;
+    });
+
+    setSelectedImages(prev => prev.filter((_, index) => {
+      // Solo filtrar imágenes nuevas, no las existentes
+      const imagePreview = imagePreviews[indexToRemove];
+      return imagePreview?.isExisting || index !== indexToRemove;
+    }));
+  };
+
+  // Establecer imagen principal
+  const handleSetPrimary = (indexToSetPrimary) => {
+    setImagePreviews(prev => prev.map((img, index) => ({
+      ...img,
+      isPrimary: index === indexToSetPrimary
+    })));
   };
 
 const handleSubmit = (e) => {
     e.preventDefault();
+    
     // --- VALIDACIÓN ADICIONAL ---
-    if (!formData.image) {
-      alert("Por favor, sube una imagen para el producto.");
-      return; // Detiene el envío del formulario
+    if (imagePreviews.length === 0) {
+      alert("Por favor, sube al menos una imagen para el producto.");
+      return;
     }
     if (!formData.categoryId) {
       alert("Por favor, selecciona una categoría para el producto.");
-      return; // Detiene el envío del formulario
+      return;
     }
-    onSubmit(formData);
+
+    // Preparar datos para envío
+    const dataToSubmit = {
+      ...formData,
+      images: imagePreviews,
+      newImages: selectedImages
+    };
+
+    onSubmit(dataToSubmit);
   };
 
   return (
@@ -86,10 +162,10 @@ const handleSubmit = (e) => {
       </FormControl>
 
       <Box sx={{ mt: 2, mb: 2 }}>
-        {/* El input de archivo no tiene 'required', por eso lo validamos manualmente */}
         <Button 
           variant="contained" 
           component="label"
+          startIcon={<CloudUploadIcon />}
           sx={{
             backgroundColor: '#d4a5a5',
             color: '#ffffff',
@@ -103,13 +179,96 @@ const handleSubmit = (e) => {
             },
           }}
         >
-          Subir Imagen
-          <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+          Subir Imágenes (máx. 5)
+          <input 
+            type="file" 
+            hidden 
+            accept="image/*" 
+            multiple 
+            onChange={handleFileChange} 
+          />
         </Button>
-        {imagePreview && (
+        
+        {imagePreviews.length > 0 && (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2">Vista previa:</Typography>
-            <Avatar src={imagePreview} alt="Vista previa" variant="square" sx={{ width: 100, height: 100, mt: 1 }} />
+            <Typography variant="subtitle2" gutterBottom>
+              Imágenes del producto ({imagePreviews.length}/5):
+            </Typography>
+            <Grid container spacing={2}>
+              {imagePreviews.map((image, index) => (
+                <Grid item xs={6} sm={4} md={3} key={index}>
+                  <Box sx={{ position: 'relative' }}>
+                    <Avatar 
+                      src={image.url} 
+                      alt={`Imagen ${index + 1}`} 
+                      variant="square" 
+                      sx={{ 
+                        width: '100%', 
+                        height: 120, 
+                        border: image.isPrimary ? '3px solid #d4a5a5' : '1px solid #ddd',
+                        borderRadius: 1
+                      }} 
+                    />
+                    
+                    {/* Chip de imagen principal */}
+                    {image.isPrimary && (
+                      <Chip
+                        label="Principal"
+                        size="small"
+                        color="primary"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          left: 4,
+                          fontSize: '0.7rem'
+                        }}
+                      />
+                    )}
+                    
+                    {/* Botones de acción */}
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.5
+                    }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveImage(index)}
+                        sx={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                          '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                    
+                    {/* Botón para establecer como principal */}
+                    {!image.isPrimary && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleSetPrimary(index)}
+                        sx={{
+                          position: 'absolute',
+                          bottom: 4,
+                          left: 4,
+                          right: 4,
+                          fontSize: '0.7rem',
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          '&:hover': { backgroundColor: 'rgba(255, 255, 255, 1)' }
+                        }}
+                      >
+                        Hacer Principal
+                      </Button>
+                    )}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Box>
         )}
       </Box>

@@ -36,7 +36,9 @@ function CategoryDetailPage() {
         setCategoryName(categoryResponse.data.name);
 
         const productsResponse = await axios.get(`http://localhost:3001/api/products?categoryId=${id}`);
-        setProducts(productsResponse.data.filter(p => p.active)); // Aca me aseguro de mostrar solo productos activos
+        // El backend ahora devuelve un objeto con la propiedad 'products'
+        const productsArray = productsResponse.data.products || productsResponse.data;
+        setProducts(Array.isArray(productsArray) ? productsArray.filter(p => p.active) : []); // Aca me aseguro de mostrar solo productos activos
       } catch (err) {
         console.error('Error al cargar la categoría o sus productos:', err);
         setError('No se pudo cargar la categoría o sus productos. Inténtalo de nuevo.');
@@ -123,10 +125,6 @@ function CategoryDetailPage() {
           }}
         >
           {products.map((product) => {
-            const discountedPrice = product.ofert && product.discount > 0
-              ? product.price * (1 - product.discount / 100)
-              : product.price;
-
             return (
               <Card
                 key={product.id}
@@ -214,19 +212,9 @@ function CategoryDetailPage() {
                         : product.description}
                     </Typography>
                     <Box sx={{ mt: 'auto' }}>
-                      {product.ofert && product.discount > 0 && (
-                        <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                          ${product.price.toFixed(2)}
-                        </Typography>
-                      )}
                       <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 'bold' }}>
-                        ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
+                        {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : `$${parseFloat(product.price || 0).toFixed(2)}`}
                       </Typography>
-                      {product.discount > 0 && (
-                        <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                          ${typeof discountedPrice === 'number' ? discountedPrice.toFixed(2) : parseFloat(discountedPrice || 0).toFixed(2)}
-                        </Typography>
-                      )}
                     </Box>
                     <Typography variant="body2" color={product.stock > 0 ? 'text.secondary' : 'error.main'}>
                       Stock: {product.stock > 0 ? product.stock : 'Agotado'}

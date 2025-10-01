@@ -14,18 +14,19 @@ import {
   Divider,
   Alert,
   Snackbar,
-  CircularProgress // Agregado para el loading state del checkout
+  CircularProgress
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Importar axios para la llamada al backend
+import axios from 'axios';
 
-import { useCart } from '../context/CartContext.jsx'; // <-- Importa el hook useCart
+import { useCart } from '../context/CartContext.jsx';
+import { formatPrice } from '../utils/priceUtils.js';
+import { COLORS, BUTTON_STYLES, CARD_STYLES } from '../utils/colorConstants.js';
 
 function CartPage() {
-  // Obtén el estado y las funciones del carrito desde el contexto
   const { cartItems, addToCart, removeFromCart, deleteItemFromCart, clearCart, getCartTotal } = useCart();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -33,59 +34,110 @@ function CartPage() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const navigate = useNavigate();
 
-  // Estados para simular detalles de pago (para la pasarela simulada)
+  // Estados para simular detalles de pago
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
-  const [loadingCheckout, setLoadingCheckout] = useState(false); // Para el estado de carga del checkout
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // Validar si el carrito está vacío al cargar la página (y si se vacía después de una compra)
   useEffect(() => {
-    // Si llegamos a esta página y el carrito está vacío, mostramos un mensaje.
-    // Esto se mantiene, pero la lógica de vaciado ocurre ahora en handleCheckout.
-    if (cartItems.length === 0 && !snackbarOpen) { // Solo si no hay un snackbar activo (para evitar mostrarlo justo después de vaciarlo)
+    if (cartItems.length === 0 && !snackbarOpen) {
       setSnackbarMessage('Tu carrito está vacío. Añade productos para continuar.');
       setSnackbarSeverity('info');
       setSnackbarOpen(true);
     }
-  }, [cartItems.length]); // Dependencia: reacciona si la cantidad de ítems en el carrito cambia
+  }, [cartItems.length]);
 
-  // Función para manejar el incremento de cantidad desde el carrito (usa la del contexto)
   const handleIncrementQuantity = (item) => {
-    // Es buena práctica validar el stock aquí también antes de añadir
     if (item.quantity < item.stock) {
       addToCart(item, 1);
-      setSnackbarMessage(`Cantidad de "${item.name}" actualizada.`);
-      setSnackbarSeverity('info');
-      setSnackbarOpen(true);
     } else {
-      setSnackbarMessage(`Has alcanzado el stock máximo (${item.stock}) para "${item.name}".`);
+      setSnackbarMessage(`No puedes añadir más de "${item.name}". Stock disponible: ${item.stock}.`);
       setSnackbarSeverity('warning');
       setSnackbarOpen(true);
     }
   };
 
-  // Función para manejar el decremento de cantidad desde el carrito (usa la del contexto)
   const handleDecrementQuantity = (item) => {
     if (item.quantity > 1) {
       removeFromCart(item.id, 1);
-      setSnackbarMessage(`Cantidad de "${item.name}" actualizada.`);
-      setSnackbarSeverity('info');
-      setSnackbarOpen(true);
     } else {
-      deleteItemFromCart(item.id);
-      setSnackbarMessage(`"${item.name}" eliminado del carrito.`);
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
+      handleDeleteItem(item.id, item.name);
     }
   };
 
-  // Función para eliminar completamente un producto desde el carrito (usa la del contexto)
-  const handleDeleteItem = (productId, productName) => {
-    deleteItemFromCart(productId);
-    setSnackbarMessage(`"${productName}" eliminado completamente del carrito.`);
-    setSnackbarSeverity('warning');
+  const handleDeleteItem = (itemId, itemName) => {
+    deleteItemFromCart(itemId);
+    setSnackbarMessage(`"${itemName}" eliminado del carrito.`);
+    setSnackbarSeverity('info');
     setSnackbarOpen(true);
+  };
+
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      setSnackbarMessage('Tu carrito está vacío. Añade productos antes de proceder al checkout.');
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (!cardNumber || !expiryDate || !cvv) {
+      setSnackbarMessage('Por favor, completa todos los campos de pago.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setLoadingCheckout(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setSnackbarMessage('Debes iniciar sesión para realizar una compra.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        navigate('/auth');
+        return;
+      }
+
+      const orderData = {
+        items: cartItems.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total: getCartTotal(),
+        paymentMethod: 'credit_card',
+        paymentDetails: {
+          cardNumber: cardNumber.slice(-4),
+          expiryDate: expiryDate
+        }
+      };
+
+      const response = await axios.post('http://localhost:3001/api/orders', orderData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      clearCart();
+      setSnackbarMessage('¡Compra realizada exitosamente! Serás redirigido a tus órdenes.');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+      setTimeout(() => {
+        navigate('/orders');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error en el checkout:', error);
+      setSnackbarMessage(error.response?.data?.message || 'Error al procesar la compra. Inténtalo de nuevo.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setLoadingCheckout(false);
+    }
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -95,102 +147,40 @@ function CartPage() {
     setSnackbarOpen(false);
   };
 
-  // Lógica de Checkout ahora con llamada al backend
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-      setSnackbarMessage('Tu carrito está vacío. Añade productos para continuar.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setLoadingCheckout(true); // Inicia el estado de carga
-    setSnackbarOpen(false); // Cierra cualquier snackbar previo
-
-    try {
-      const token = localStorage.getItem('token'); // Obtener el token JWT
-      if (!token) {
-        setSnackbarMessage('Debes iniciar sesión para finalizar la compra.');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-        setLoadingCheckout(false);
-        navigate('/mis-ordenes'); // Redirige a la página de órdenes si no hay token
-        return;
-      }
-
-      // Preparar los ítems para la API (solo productId y amount)
-      const itemsForOrder = cartItems.map(item => ({
-        productId: item.id,
-        amount: item.quantity,
-      }));
-
-      const orderData = {
-        items: itemsForOrder,
-        paymentInfo: { // Simulación de datos de pago
-          cardNumber: cardNumber,
-          expiryDate: expiryDate,
-          cvv: cvv,
-        }
-      };
-
-      const response = await axios.post('http://localhost:3001/api/orders', orderData, {
-        headers: {
-          'Authorization': `Bearer ${token}` // Adjuntar el token JWT
-        }
-      });
-
-      // Si la orden se creó con éxito en el backend
-      setSnackbarMessage(response.data.message || '¡Tu compra ha sido realizada con éxito!');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-      clearCart(); // Vaciar el carrito en el frontend solo si el backend tuvo éxito
-      setCardNumber(''); // Limpiar campos de pago
-      setExpiryDate('');
-      setCvv('');
-      navigate('/mis-ordenes'); // Opcional: redirigir al historial de órdenes
-      
-    } catch (err) {
-      console.error('Error durante el checkout:', err.response?.data || err.message);
-      setSnackbarMessage(err.response?.data?.message || 'Error al procesar tu compra. Inténtalo de nuevo.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    } finally {
-      setLoadingCheckout(false); // Finaliza el estado de carga
-    }
-  };
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center', mb: 4, color: 'secondary.main' }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ 
+        textAlign: 'center', 
+        mb: 4, 
+        color: COLORS.primary.main,
+        fontWeight: 700
+      }}>
         Tu Carrito de Compras
       </Typography>
 
       {cartItems.length === 0 ? (
-        <Box sx={{ textAlign: 'center', mt: 8, p: 3, backgroundColor: 'background.paper', borderRadius: 2 }}>
-          <Typography variant="h5" color="text.secondary">
+        <Box sx={{ 
+          textAlign: 'center', 
+          mt: 8, 
+          p: 4, 
+          ...CARD_STYLES.base,
+          maxWidth: 600,
+          mx: 'auto'
+        }}>
+          <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
             Tu carrito está vacío 😔
           </Typography>
-          <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary' }}>
+          <Typography variant="body1" sx={{ mt: 2, color: 'text.secondary', mb: 3 }}>
             ¡Explora nuestros productos y encuentra tus favoritos!
           </Typography>
           <Button
             variant="contained"
             size="large"
             sx={{ 
-              mt: 3, 
-              borderRadius: 2,
-              backgroundColor: '#d4a5a5',
-            color: '#ffffff',
-            fontWeight: 600,
-            py: 1.5,
-            px: 4,
-            fontSize: '1.1rem',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              backgroundColor: '#e8c4c4',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
-              },
+              py: 1.5,
+              px: 4,
+              fontSize: '1.1rem',
+              ...BUTTON_STYLES.primary,
             }}
             onClick={() => navigate('/products')}
           >
@@ -205,113 +195,177 @@ function CartPage() {
                 display: 'flex', 
                 mb: 2, 
                 p: 2, 
-                background: 'linear-gradient(135deg, #dbb6ee, #b57edc)',
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-                },
+                ...CARD_STYLES.base,
+                ...CARD_STYLES.hover,
               }}>
                 <CardMedia
                   component="img"
-                  sx={{ width: 100, height: 100, objectFit: 'contain', borderRadius: 1, mr: 2 }}
-                  image={item.imagenURL || "https://placehold.co/100x100/4a4a4a/f0f0f0?text=No+Image"}
+                  sx={{ 
+                    width: 120, 
+                    height: 120, 
+                    objectFit: 'contain', 
+                    borderRadius: 1, 
+                    mr: 2,
+                    backgroundColor: COLORS.background.paper,
+                    p: 1
+                  }}
+                  image={item.imagenURL || "https://placehold.co/120x120/4a4a4a/f0f0f0?text=No+Image"}
                   alt={item.name}
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
+                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/120x120/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
                 />
-                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 0 }}>
-                  <Typography variant="h6" component="div" sx={{ color: 'text.primary' }}>
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'center', 
+                  p: 0 
+                }}>
+                  <Typography variant="h6" component="div" sx={{ 
+                    color: COLORS.text.primary,
+                    fontWeight: 600,
+                    mb: 1
+                  }}>
                     {item.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Precio Unitario: ${typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    Precio Unitario: ${formatPrice(item.price)}
                   </Typography>
-                  <Typography variant="body1" color="secondary.main" sx={{ mt: 1 }}>
-                    Subtotal: ${typeof item.price === 'number' && typeof item.quantity === 'number' ? (item.price * item.quantity).toFixed(2) : (parseFloat(item.price || 0) * parseInt(item.quantity || 0)).toFixed(2)}
+                  <Typography variant="body1" sx={{ 
+                    color: COLORS.primary.main,
+                    fontWeight: 600,
+                    fontSize: '1.1rem'
+                  }}>
+                    Subtotal: ${formatPrice(item.price * item.quantity)}
                   </Typography>
                 </CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-                  <IconButton size="small" onClick={() => handleDecrementQuantity(item)}>
-                    <RemoveIcon sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                  <TextField
-                    variant="outlined"
-                    size="small"
-                    value={item.quantity}
-                    sx={{ width: 60, mx: 1, input: { textAlign: 'center', color: 'text.primary' } }}
-                    InputProps={{ readOnly: true }}
-                  />
-                  <IconButton size="small" onClick={() => handleIncrementQuantity(item)}>
-                    <AddIcon sx={{ color: 'text.secondary' }} />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteItem(item.id, item.name)} sx={{ ml: 2, color: 'error.main' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  ml: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 1
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDecrementQuantity(item)}
+                      sx={{ 
+                        color: COLORS.text.secondary,
+                        '&:hover': { backgroundColor: 'rgba(212, 165, 165, 0.1)' }
+                      }}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      value={item.quantity}
+                      sx={{ 
+                        width: 60, 
+                        mx: 1, 
+                        input: { 
+                          textAlign: 'center', 
+                          color: COLORS.text.primary,
+                          fontWeight: 600
+                        } 
+                      }}
+                      InputProps={{ readOnly: true }}
+                    />
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleIncrementQuantity(item)}
+                      sx={{ 
+                        color: COLORS.text.secondary,
+                        '&:hover': { backgroundColor: 'rgba(212, 165, 165, 0.1)' }
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleDeleteItem(item.id, item.name)} 
+                    sx={{ 
+                      color: 'error.main',
+                      '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.1)' }
+                    }}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </Box>
               </Card>
             ))}
           </Grid>
+          
           <Grid item xs={12} md={4}>
             <Card sx={{ 
               p: 3, 
               background: 'linear-gradient(135deg, #dbb6ee, #b57edc)',
               borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              boxShadow: COLORS.shadows.heavy,
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
-              <Typography variant="h5" gutterBottom sx={{ color: '#333333', textAlign: 'center', fontWeight: 700 }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                color: COLORS.text.light, 
+                textAlign: 'center', 
+                fontWeight: 700,
+                mb: 3
+              }}>
                 Resumen del Pedido
               </Typography>
               <Divider sx={{ my: 2, backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
+              
               <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
-                mb: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                borderRadius: 2,
+                mb: 3,
                 p: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 2
               }}>
-                <Typography variant="h6" sx={{ color: '#333333', fontWeight: 600 }}>
+                <Typography variant="h6" sx={{ color: COLORS.text.light, fontWeight: 600 }}>
                   Total:
                 </Typography>
-                <Typography variant="h6" sx={{ color: '#d4a5a5', fontWeight: 700, fontSize: '1.3rem' }}>
-                  ${getCartTotal().toFixed(2)}
+                <Typography variant="h6" sx={{ color: COLORS.text.light, fontWeight: 700 }}>
+                  ${formatPrice(getCartTotal())}
                 </Typography>
               </Box>
 
-              {/* Nuevos campos para la información de pago */}
-              <Typography variant="h6" gutterBottom sx={{ color: '#333333', mt: 3, textAlign: 'center', fontWeight: 600 }}>
-                Información de Pago (Simulado):
-              </Typography>
-              <TextField
-                label="Número de Tarjeta (Usa '4242' para éxito, 'FAIL' para fallo)"
-                variant="outlined"
-                fullWidth
-                required
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              {/* Campos de pago simulados */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.text.light, mb: 2 }}>
+                  Información de Pago
+                </Typography>
                 <TextField
-                  label="Fecha de Vencimiento (MM/AA)"
+                  label="Número de Tarjeta"
                   variant="outlined"
                   fullWidth
                   required
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  placeholder="1234 5678 9012 3456"
+                  sx={{ mb: 2 }}
                 />
-                <TextField
-                  label="CVV"
-                  variant="outlined"
-                  fullWidth
-                  required
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="MM/AA"
+                    variant="outlined"
+                    required
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    placeholder="12/25"
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="CVV"
+                    variant="outlined"
+                    required
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    placeholder="123"
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
               </Box>
 
               <Button
@@ -319,28 +373,19 @@ function CartPage() {
                 fullWidth
                 size="large"
                 sx={{ 
-                  mt: 2, 
-                  borderRadius: 2,
-                  backgroundColor: '#d4a5a5',
-                  color: '#ffffff',
-                  fontWeight: 700,
                   py: 2,
                   fontSize: '1.2rem',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: '#e8c4c4',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(212, 165, 165, 0.5)',
-                  },
+                  fontWeight: 700,
+                  ...BUTTON_STYLES.primary,
                   '&:disabled': {
                     backgroundColor: '#ccc',
                     color: '#999',
                   },
                 }}
                 onClick={handleCheckout}
-                disabled={loadingCheckout || cartItems.length === 0} // Deshabilita durante la carga o si el carrito está vacío
+                disabled={loadingCheckout || cartItems.length === 0}
               >
-                {loadingCheckout ? <CircularProgress size={24} color="inherit" /> : 'Finalizar Compra (Checkout)'}
+                {loadingCheckout ? <CircularProgress size={24} color="inherit" /> : 'Finalizar Compra'}
               </Button>
             </Card>
           </Grid>
@@ -349,7 +394,7 @@ function CartPage() {
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={6000} // Mayor duración para mensajes de checkout
+        autoHideDuration={6000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
