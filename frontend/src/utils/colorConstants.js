@@ -16,7 +16,7 @@ export const COLORS = {
     main: '#c9a9a9',
     light: '#e0d0d0',
     dark: '#a08080',
-    contrastText: '#5d4e4e'
+    contrastText: '#d4a5a5'
   },
   
   // Colores de estado
@@ -27,7 +27,7 @@ export const COLORS = {
   
   // Colores de texto
   text: {
-    primary: '#5d4e4e',
+    primary: '#d4a5a',
     secondary: '#8a7575',
     light: '#333333'
   },

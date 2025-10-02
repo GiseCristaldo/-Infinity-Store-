@@ -19,11 +19,14 @@ export const isValidPrice = (price) => {
  * @returns {string} - Precio formateado
  */
 export const formatPrice = (price, currency = '$') => {
-  if (!isValidPrice(price)) {
+  // Convertir a número y validar
+  const numPrice = parseFloat(price);
+  
+  // Verificar si es un número válido y mayor o igual a 0
+  if (isNaN(numPrice) || numPrice < 0) {
     return `${currency}0.00`;
   }
   
-  const numPrice = parseFloat(price);
   return `${currency}${numPrice.toFixed(2)}`;
 };
 

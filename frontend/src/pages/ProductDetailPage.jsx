@@ -170,6 +170,7 @@ function ProductDetailPage() {
         <CategoryFilter
           onSelectCategory={handleSelectCategory}
           selectedCategoryId={selectedCategoryId}
+          onCategoryChange={setSelectedCategoryId}
         />
       </Box>
 
@@ -180,10 +181,8 @@ function ProductDetailPage() {
         alignItems: 'start',
         minHeight: '600px'
       }}>
-        {/* Columna Izquierda: Imagen del Producto */}
-        <Grid item sx={{ 
-          gridColumn: { xs: '1', md: '1' }
-        }}>
+        {/* Columna izquierda: Imágenes del producto */}
+        <Grid item xs={12} md={6}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {/* Imagen Principal */}
             <Box
@@ -432,7 +431,7 @@ function ProductDetailPage() {
               </Typography>
             </Box>
 
-            {/* Precios */}
+            {/* Precio simplificado sin descuentos */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="h4" sx={{ color: COLORS.primary.main, fontWeight: 'bold', mb: 1 }}>
                 {formatPrice(product.price)}
