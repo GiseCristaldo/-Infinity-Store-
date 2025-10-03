@@ -14,7 +14,8 @@ const carouselItemSx = {
   justifyContent: 'center',
   alignItems: 'center',
   height: { xs: 200, sm: 300, md: 400 }, // Altura responsiva del slide
-  color: 'white',
+  color: 'primary.light',
+  fontWeight: 900,
   textAlign: 'center',
   position: 'relative',
   overflow: 'hidden', // Oculta el desbordamiento de la imagen
@@ -93,7 +94,7 @@ function ImageCarousel() {
             <Box sx={{ ...carouselItemSx, backgroundImage: `url(${slide.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
               <Box sx={overlaySx} />
               <Box sx={contentSx}>
-                <Typography variant="h2" component="h2" gutterBottom sx={{ color: 'primary.ligth', fontWeight: 700,
+                <Typography variant="h2" component="h2" gutterBottom sx={{ color: 'secondary.light', fontWeight: 700,
                   fontSize: { xs: '1rem', sm: '2rem', md: '2.5rem', lg: '3rem' }, // Font size responsivo para el título
                   lineHeight: 1.2, // Ajustar line-height para el responsive
                  }}>

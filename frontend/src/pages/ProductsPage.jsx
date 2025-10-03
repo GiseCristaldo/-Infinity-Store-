@@ -203,7 +203,7 @@ function ProductsPage() {
                   )}
                   <CardMedia
                     component="img"
-                    image={product.imagenURL || "https://placehold.co/400x200/4a4a4a/f0f0f0?text=No+Image"}
+                    image={product.imagenPath || "https://placehold.co/400x200/4a4a4a/f0f0f0?text=No+Image"}
                     alt={product.name}
                     onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x200/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
                     sx={{
