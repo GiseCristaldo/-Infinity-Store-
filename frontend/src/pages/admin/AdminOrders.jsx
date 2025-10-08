@@ -54,7 +54,7 @@ function AdminOrders() {
   // Manejadores para el diálogo de cambio de estado
   const handleOpenStatusDialog = (order) => {
     setCurrentOrder(order);
-    setNewStatus(order.status);
+    setNewStatus(order.state);
     setIsStatusDialogOpen(true);
   };
   
@@ -129,12 +129,10 @@ function AdminOrders() {
     switch (status) {
       case 'pendiente':
         return 'warning';
-      case 'procesando':
-        return 'info';
+      case 'pagado':
+        return 'success';
       case 'enviado':
         return 'primary';
-      case 'entregado':
-        return 'success';
       case 'cancelado':
         return 'error';
       default:
@@ -159,7 +157,6 @@ function AdminOrders() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Cliente</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Total</TableCell>
@@ -170,14 +167,13 @@ function AdminOrders() {
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell>{order.id}</TableCell>
                 <TableCell>{order.user?.nombre || 'N/A'}</TableCell>
-                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                 <TableCell>${order.total}</TableCell>
                 <TableCell>
                   <Chip 
-                    label={order.status} 
-                    color={getStatusColor(order.status)}
+                    label={order.state} 
+                    color={getStatusColor(order.state)}
                     size="small"
                   />
                 </TableCell>
@@ -197,7 +193,7 @@ function AdminOrders() {
                   <IconButton 
                     color="error"
                     onClick={() => handleOpenConfirm(order)}
-                    disabled={order.status === 'entregado'} // No permitir borrar órdenes entregadas
+                    disabled={order.state === 'entregado'} // No permitir borrar órdenes entregadas
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -230,9 +226,8 @@ function AdminOrders() {
               onChange={handleStatusChange}
             >
               <MenuItem value="pendiente">Pendiente</MenuItem>
-              <MenuItem value="procesando">Procesando</MenuItem>
+              <MenuItem value="pagado">Pagado</MenuItem>
               <MenuItem value="enviado">Enviado</MenuItem>
-              <MenuItem value="entregado">Entregado</MenuItem>
               <MenuItem value="cancelado">Cancelado</MenuItem>
             </Select>
           </FormControl>
@@ -258,14 +253,13 @@ function AdminOrders() {
                 Información General
               </Typography>
               <Box sx={{ mb: 2 }}>
-                <Typography>ID: {orderDetails.id}</Typography>
                 <Typography>Cliente: {orderDetails.user?.nombre}</Typography>
                 <Typography>Email: {orderDetails.user?.email}</Typography>
                 <Typography>Fecha: {new Date(orderDetails.createdAt).toLocaleString()}</Typography>
                 <Typography>Estado: 
                   <Chip 
-                    label={orderDetails.status} 
-                    color={getStatusColor(orderDetails.status)}
+                    label={orderDetails?.state} 
+                    color={getStatusColor(orderDetails?.state)}
                     size="small"
                     sx={{ ml: 1 }}
                   />

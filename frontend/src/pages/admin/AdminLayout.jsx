@@ -5,6 +5,7 @@ import {
   ListItemText, Toolbar, Typography, Tooltip, IconButton
 } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles'; // Importar createTheme
+import { ADMIN_COLORS } from '../../utils/colorConstants.js';
 
 // --- Iconos ---
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -18,14 +19,14 @@ import { useAuth } from '../../context/AuthContext';
 const adminTheme = createTheme({
   palette: {
     primary: {
-      main: '#7e57c2', // Morado claro y sobrio
+      main: ADMIN_COLORS.primary.main,
     },
     background: {
-      default: '#ffffff', // Fondo principal blanco
+      default: ADMIN_COLORS.background.default || ADMIN_COLORS.background.paper,
     },
     text: {
-      primary: '#212121', // Texto principal oscuro
-      secondary: '#757575',
+      primary: ADMIN_COLORS.text.light,
+      secondary: ADMIN_COLORS.text.secondary,
     },
   },
   typography: {
@@ -36,9 +37,9 @@ const adminTheme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         head: {
-          backgroundColor: '#f5f5f5', // Fondo gris claro para encabezados de tabla
+          backgroundColor: ADMIN_COLORS.background.overlay,
           fontWeight: 700,
-          color: '#212121',
+          color: ADMIN_COLORS.text.light,
         },
       },
     },

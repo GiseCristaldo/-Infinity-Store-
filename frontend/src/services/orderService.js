@@ -38,7 +38,7 @@ export const updateOrderStatus = async (id, status) => {
   const token = localStorage.getItem('token');
   try {
     const response = await axios.put(`${API_URL}/orders/${id}/status`, 
-      { status },
+      { state: status },
       { headers: { 'Authorization': `Bearer ${token}` }}
     );
     return response.data;

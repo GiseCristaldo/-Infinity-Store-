@@ -27,7 +27,7 @@ export const COLORS = {
   
   // Colores de texto
   text: {
-    primary: '#d4a5a',
+    primary: '#333333',
     secondary: '#8a7575',
     light: '#333333'
   },
@@ -91,5 +91,37 @@ export const CARD_STYLES = {
       transform: 'translateY(-2px)',
       boxShadow: '0 8px 25px rgba(212, 165, 165, 0.25)',
     }
+  }
+};
+
+// Paleta específica para el panel de administración (inspirada en ejemplo)
+export const ADMIN_COLORS = {
+  primary: {
+    main: '#f28aa0',
+    light: '#f9c2cf',
+    dark: '#d96a84',
+    contrastText: '#ffffff'
+  },
+  secondary: {
+    main: '#f5b7b1',
+    light: '#fde1dc',
+    dark: '#e79a93',
+    contrastText: '#ffffff'
+  },
+  text: {
+    primary: '#1f1f1f',
+    secondary: '#6f5a5a',
+    light: '#1f1f1f'
+  },
+  background: {
+    gradient: 'linear-gradient(135deg, #ffe4ea, #f9d6d9)',
+    paper: '#ffffff',
+    overlay: 'rgba(242, 138, 160, 0.08)',
+    default: '#fdfdfd'
+  },
+  shadows: {
+    light: '0 4px 12px rgba(242, 138, 160, 0.25)',
+    medium: '0 6px 20px rgba(242, 138, 160, 0.35)',
+    heavy: '0 8px 32px rgba(242, 138, 160, 0.18)'
   }
 };

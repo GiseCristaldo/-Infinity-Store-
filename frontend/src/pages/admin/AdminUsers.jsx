@@ -126,8 +126,7 @@ function AdminUsers() {
       <TableContainer>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
+            <TableRow> 
               <TableCell>Nombre</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Rol</TableCell>
@@ -137,7 +136,6 @@ function AdminUsers() {
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.id}</TableCell>
                 <TableCell>{user.nombre}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>

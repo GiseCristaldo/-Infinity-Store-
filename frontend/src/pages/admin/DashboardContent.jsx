@@ -4,6 +4,7 @@ import {
   List, ListItem, ListItemText, CircularProgress, 
   Divider, Button, IconButton, Alert, Container, Avatar
 } from '@mui/material';
+import { ADMIN_COLORS } from '../../utils/colorConstants.js';
 import { Link } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -295,8 +296,8 @@ function DashboardAdmin() {
         sx={{ 
           mb: 4, 
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #2A004B 0%, #7e57c2 100%)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+          background: ADMIN_COLORS.background.gradient,
+          boxShadow: ADMIN_COLORS.shadows.medium
         }}
         elevation={0}
       >
@@ -307,7 +308,7 @@ function DashboardAdmin() {
                 variant="h4" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: 'white',
+                  color: ADMIN_COLORS.primary.contrastText,
                   mb: 1,
                   textShadow: '0px 2px 4px rgba(0,0,0,0.2)'
                 }}
@@ -357,7 +358,7 @@ function DashboardAdmin() {
           gap: 1
         }}
       >
-        <DashboardIcon sx={{ fontSize: '1.75rem' }} /> Resumen General
+        <DashboardIcon sx={{ fontSize: '1.75rem', color: ADMIN_COLORS.primary.main }} /> Resumen General
       </Typography>
       
       <Grid container spacing={3}>
@@ -370,7 +371,7 @@ function DashboardAdmin() {
             loading={stats.users.loading} 
             error={stats.users.error}
             linkTo="/admin/users"
-            gradientColors="linear-gradient(135deg, #7e57c2 0%, #a806ff 100%)"
+            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -381,7 +382,7 @@ function DashboardAdmin() {
             loading={stats.products.loading} 
             error={stats.products.error}
             linkTo="/admin/products"
-            gradientColors="linear-gradient(135deg, #6A0DAD 0%, #9c27b0 100%)"
+            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -392,7 +393,7 @@ function DashboardAdmin() {
             loading={stats.categories.loading} 
             error={stats.categories.error}
             linkTo="/admin/categories"
-            gradientColors="linear-gradient(135deg, #5c3cc8 0%, #8559da 100%)"
+            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -403,7 +404,7 @@ function DashboardAdmin() {
             loading={stats.orders.loading} 
             error={stats.orders.error}
             linkTo="/admin/orders"
-            gradientColors="linear-gradient(135deg, #a806ff 0%, #c545ff 100%)"
+            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
           />
         </Grid>
 
@@ -420,7 +421,6 @@ function DashboardAdmin() {
               gap: 1
             }}
           >
-            <ShoppingCartIcon /> Actividad Reciente
           </Typography>
         </Grid>
 
@@ -443,7 +443,7 @@ function DashboardAdmin() {
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 borderBottom: '1px solid #f0f0f0',
-                background: 'linear-gradient(to right, rgba(126, 87, 194, 0.05), rgba(168, 6, 255, 0.05))'
+                backgroundColor: ADMIN_COLORS.background.overlay
               }}>
                 <Typography 
                   variant="h6" 
@@ -652,7 +652,7 @@ function DashboardAdmin() {
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 borderBottom: '1px solid #f0f0f0',
-                background: 'linear-gradient(to right, rgba(126, 87, 194, 0.05), rgba(168, 6, 255, 0.05))'
+                backgroundColor: ADMIN_COLORS.background.overlay
               }}>
                 <Typography 
                   variant="h6" 
@@ -688,10 +688,10 @@ function DashboardAdmin() {
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 2,
-                        backgroundColor: 'rgba(126, 87, 194, 0.08)',
+                        backgroundColor: 'rgba(212, 165, 165, 0.08)',
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          backgroundColor: 'rgba(126, 87, 194, 0.12)',
+                          backgroundColor: 'rgba(212, 165, 165, 0.12)',
                           transform: 'translateY(-3px)',
                           boxShadow: '0 5px 10px rgba(0,0,0,0.1)'
                         }
@@ -748,10 +748,10 @@ function DashboardAdmin() {
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 2,
-                        backgroundColor: 'rgba(168, 6, 255, 0.08)',
+                        backgroundColor: 'rgba(212, 165, 165, 0.08)',
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          backgroundColor: 'rgba(168, 6, 255, 0.12)',
+                          backgroundColor: 'rgba(212, 165, 165, 0.12)',
                           transform: 'translateY(-3px)',
                           boxShadow: '0 5px 10px rgba(0,0,0,0.1)'
                         }
@@ -808,10 +808,10 @@ function DashboardAdmin() {
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 2,
-                        backgroundColor: 'rgba(106, 13, 173, 0.08)',
+                        backgroundColor: 'rgba(212, 165, 165, 0.08)',
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          backgroundColor: 'rgba(106, 13, 173, 0.12)',
+                          backgroundColor: 'rgba(212, 165, 165, 0.12)',
                           transform: 'translateY(-3px)',
                           boxShadow: '0 5px 10px rgba(0,0,0,0.1)'
                         }
@@ -819,7 +819,7 @@ function DashboardAdmin() {
                     >
                       <Avatar 
                         sx={{ 
-                          bgcolor: '#6A0DAD', 
+                        bgcolor: ADMIN_COLORS.primary.dark, 
                           width: 45, 
                           height: 45,
                           mb: 1.5
@@ -868,10 +868,10 @@ function DashboardAdmin() {
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 2,
-                        backgroundColor: 'rgba(42, 0, 75, 0.08)',
+                        backgroundColor: 'rgba(242, 138, 160, 0.08)',
                         transition: 'all 0.2s ease',
                         '&:hover': {
-                          backgroundColor: 'rgba(42, 0, 75, 0.12)',
+                          backgroundColor: 'rgba(242, 138, 160, 0.12)',
                           transform: 'translateY(-3px)',
                           boxShadow: '0 5px 10px rgba(0,0,0,0.1)'
                         }
@@ -879,7 +879,7 @@ function DashboardAdmin() {
                     >
                       <Avatar 
                         sx={{ 
-                          bgcolor: '#2A004B', 
+                        bgcolor: ADMIN_COLORS.primary.dark, 
                           width: 45, 
                           height: 45,
                           mb: 1.5

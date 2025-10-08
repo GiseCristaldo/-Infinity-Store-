@@ -4,11 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
 function RequireAuth({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
+  const hasToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   // Mientras se verifica el estado de autenticación, mostramos un spinner
-  if (loading) {
+  if (loading || (hasToken && (!isAuthenticated || !user))) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
         <CircularProgress />

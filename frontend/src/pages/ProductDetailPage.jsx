@@ -431,10 +431,10 @@ function ProductDetailPage() {
               </Typography>
             </Box>
 
-            {/* Precio simplificado sin descuentos */}
+            {/* Precio: soporta número (formateado) o string ya formateado desde backend */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="h4" sx={{ color: COLORS.primary.main, fontWeight: 'bold', mb: 1 }}>
-                {formatPrice(product.price)}
+                {typeof product.price === 'number' ? formatPrice(product.price) : (product.price || formatPrice(0))}
               </Typography>
             </Box>
 

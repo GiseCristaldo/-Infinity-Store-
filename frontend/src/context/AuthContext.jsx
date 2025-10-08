@@ -26,7 +26,19 @@ export const AuthProvider = ({ children }) => {
             'Authorization': `Bearer ${token}`
           }
         });
-        setUser(response.data);
+        // La API devuelve { user: { id, nombre, email, rol } }
+        const fetchedUser = response.data?.user || null;
+        if (fetchedUser) {
+          setUser(fetchedUser);
+          // Mantener consistencia con localStorage
+          try {
+            localStorage.setItem('user', JSON.stringify(fetchedUser));
+          } catch (_) {
+            // Ignorar errores de almacenamiento
+          }
+        } else {
+          setUser(null);
+        }
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Token inválido o expirado, cerrando sesión automáticamente:', error);

@@ -84,7 +84,9 @@ function CartPage() {
     if (item.quantity > 1) {
       removeFromCart(item.id, 1);
     } else {
-      handleDeleteItem(item.id, item.name);
+      setSnackbarMessage('La cantidad mínima es 1.');
+      setSnackbarSeverity('info');
+      setSnackbarOpen(true);
     }
   };
 
@@ -360,6 +362,7 @@ function CartPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleDecrementQuantity(item)}
+                            disabled={item.quantity <= 1}
                             sx={{ 
                               color: COLORS.primary.main,
                               '&:hover': { backgroundColor: COLORS.primary.light + '20' },
@@ -378,14 +381,25 @@ function CartPage() {
                                 textAlign: 'center', 
                                 width: '40px',
                                 padding: '4px 0',
-                                fontSize: '0.9rem'
+                                fontSize: '0.9rem',
+                                color: COLORS.text.primary
                               }
                             }}
                             sx={{ 
                               '& .MuiOutlinedInput-root': {
+                                backgroundColor: COLORS.background.overlay,
                                 '& fieldset': {
                                   borderColor: COLORS.primary.light,
                                 },
+                                '&:hover fieldset': {
+                                  borderColor: COLORS.primary.main,
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: COLORS.primary.main,
+                                },
+                              },
+                              '& .MuiOutlinedInput-input': {
+                                color: COLORS.text.primary,
                               },
                               width: '60px'
                             }}
@@ -507,6 +521,7 @@ function CartPage() {
                     placeholder="1234 5678 9012 3456"
                     sx={{
                       '& .MuiOutlinedInput-root': {
+                        backgroundColor: COLORS.background.paper,
                         '& fieldset': {
                           borderColor: COLORS.primary.light,
                         },
@@ -516,6 +531,12 @@ function CartPage() {
                         '&.Mui-focused fieldset': {
                           borderColor: COLORS.primary.main,
                         },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: COLORS.text.secondary,
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: COLORS.primary.main,
                       },
                     }}
                   />
@@ -530,6 +551,7 @@ function CartPage() {
                       sx={{
                         flex: 1,
                         '& .MuiOutlinedInput-root': {
+                          backgroundColor: COLORS.background.paper,
                           '& fieldset': {
                             borderColor: COLORS.primary.light,
                           },
@@ -539,6 +561,12 @@ function CartPage() {
                           '&.Mui-focused fieldset': {
                             borderColor: COLORS.primary.main,
                           },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: COLORS.text.secondary,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: COLORS.primary.main,
                         },
                       }}
                     />
@@ -551,6 +579,7 @@ function CartPage() {
                       sx={{
                         flex: 1,
                         '& .MuiOutlinedInput-root': {
+                          backgroundColor: COLORS.background.paper,
                           '& fieldset': {
                             borderColor: COLORS.primary.light,
                           },
@@ -560,6 +589,12 @@ function CartPage() {
                           '&.Mui-focused fieldset': {
                             borderColor: COLORS.primary.main,
                           },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: COLORS.text.secondary,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: COLORS.primary.main,
                         },
                       }}
                     />

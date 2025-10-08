@@ -108,7 +108,6 @@ function AdminCategories() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
@@ -116,7 +115,6 @@ function AdminCategories() {
           <TableBody>
             {categories.map((category) => (
               <TableRow key={category.id}>
-                <TableCell>{category.id}</TableCell>
                 <TableCell>{category.name}</TableCell>
                 <TableCell align="right">
                   <IconButton color="primary" onClick={() => handleOpenForm(category)}><EditIcon /></IconButton>

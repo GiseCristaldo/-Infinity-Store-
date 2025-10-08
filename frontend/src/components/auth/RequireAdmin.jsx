@@ -1,24 +1,15 @@
-import React, { useEffect } from 'react';
-import { useLocation, Navigate, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { CircularProgress, Box, Alert } from '@mui/material';
 
 function RequireAdmin({ children }) {
   const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-
-  // Efecto para verificar continuamente el estado del usuario
-  useEffect(() => {
-    // Si el usuario cambia y ya no es admin, redirigir inmediatamente
-    if (!loading && isAuthenticated && user?.rol !== 'admin') {
-      console.warn('Acceso denegado: Usuario no es administrador');
-      navigate('/auth', { replace: true });
-    }
-  }, [user, isAuthenticated, loading, navigate]);
+  const hasToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   // Mientras se verifica el estado de autenticación, mostramos un spinner
-  if (loading) {
+  if (loading || (hasToken && (!isAuthenticated || !user))) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
         <CircularProgress />
@@ -29,6 +20,15 @@ function RequireAdmin({ children }) {
   // Si el usuario no está autenticado, redirigir a login
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Si hay token pero aún no se ha resuelto el usuario, esperar (evitar redirecciones prematuras)
+  if (hasToken && !user) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   // Verificación estricta del rol de administrador
