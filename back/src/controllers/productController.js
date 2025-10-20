@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 // --- Obtener todos los productos ---
 export const getProducts = async (req, res) => {
     try {
-        const { name, category, page = 1, limit = 10 } = req.query;
+        const { name, category, page = 1, limit = 10, sort } = req.query;
         const offset = (page - 1) * limit;
         let whereClause = { active: true };
 
@@ -15,11 +15,31 @@ export const getProducts = async (req, res) => {
             whereClause.categoryId = category;
         }
 
+        // Determinar criterio de orden
+        let orderField = 'name';
+        let orderDirection = 'ASC';
+        if (typeof sort === 'string') {
+            const s = String(sort).toLowerCase();
+            if (s === 'price_asc') {
+                orderField = 'price';
+                orderDirection = 'ASC';
+            } else if (s === 'price_desc') {
+                orderField = 'price';
+                orderDirection = 'DESC';
+            } else if (s === 'name_desc') {
+                orderField = 'name';
+                orderDirection = 'DESC';
+            } else if (s === 'name_asc') {
+                orderField = 'name';
+                orderDirection = 'ASC';
+            }
+        }
+
         const { count, rows } = await Product.findAndCountAll({
             where: whereClause,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['name', 'ASC']],
+            order: [[orderField, orderDirection]],
             include: [
                 {
                     model: Category,

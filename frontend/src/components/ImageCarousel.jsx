@@ -3,12 +3,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules'; // Importa módulos necesarios
-import 'swiper/css'; // Estilos base de Swiper
-import 'swiper/css/pagination'; // Estilos para la paginación (los puntos de abajo)
-import 'swiper/css/navigation'; // Estilos para las flechas de navegación
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import { useTheme } from '@mui/material/styles';
 
-// Estilos personalizados para el carrusel si Material UI no es suficiente
 const carouselItemSx = {
   display: 'flex',
   justifyContent: 'center',
@@ -44,6 +44,7 @@ const contentSx = {
  * Utiliza Swiper.js para mostrar slides con ofertas o mensajes destacados.
  */
 function ImageCarousel() {
+  const theme = useTheme();
   const slides = [
     {
       id: 1,
@@ -72,54 +73,57 @@ function ImageCarousel() {
   ];
 
   return (
-    <Box sx={{ my: 4, borderRadius: 10, overflow: 'hidden' }}> {/* Contenedor principal con bordes redondeados */}
+    <Box sx={{ width: '100vw', mx: 'calc(-50vw + 50%)', overflow: 'hidden' }}>
       <Swiper
         modules={[Autoplay, Pagination, Navigation]}
-        spaceBetween={0} // Espacio entre slides
-        slidesPerView={1} // Muestra 1 slide a la vez
-        autoplay={{
-          delay: 5000, // Cada 5 segundos cambia de slide
-          disableOnInteraction: false, // El autoplay no se detiene al interactuar
+        autoplay={{ delay: 4000, disableOnInteraction: false }}
+        pagination={{ clickable: true }}
+        navigation
+        style={{
+          width: '100%',
+          height: '100%',
+          '--swiper-theme-color': theme.palette.primary.main,        // bullets y barra
+          '--swiper-pagination-color': theme.palette.primary.main,   // bullets
+          '--swiper-navigation-color': theme.palette.primary.main,   // flechas
         }}
-        pagination={{ clickable: true }} // Paginación con puntos clicables
-        navigation={true} // Flechas de navegación
-        loop={true} // Carrusel infinito
-        style={{ '--swiper-pagination-color': '#f20278', '--swiper-navigation-color': '#f20278', '--swiper-navigation-size': '24px', // <-- Tamaño de las flechas (por ejemplo, 24px)
-          '--swiper-pagination-bullet-width': '8px', // <-- Ancho de los puntos
-          '--swiper-pagination-bullet-height': '8px', // <-- Altura de los puntos
-          '--swiper-pagination-bullet-inactive-opacity': '0.5', }} // Colores de paginación/navegación
       >
         {slides.map((slide) => (
           <SwiperSlide key={slide.id}>
-            <Box sx={{ ...carouselItemSx, backgroundImage: `url(${slide.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <Box
+              sx={{
+                ...carouselItemSx,
+                borderRadius: 0,
+                backgroundImage: `url(${slide.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
               <Box sx={overlaySx} />
               <Box sx={contentSx}>
                 <Typography variant="h2" component="h2" gutterBottom sx={{ color: 'secondary.light', fontWeight: 700,
-                  fontSize: { xs: '1rem', sm: '2rem', md: '2.5rem', lg: '3rem' }, // Font size responsivo para el título
-                  lineHeight: 1.2, // Ajustar line-height para el responsive
-                 }}>
+                  fontSize: { xs: '1rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+                  lineHeight: 1.2,
+                }}>
                   {slide.title}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, fontSize: { xs: '0.85rem', sm: '1rem', md: '1.15rem', lg: '1.25rem' }}}>
                   {slide.description}
                 </Typography>
-                <Button 
-                  variant="contained" 
-                  component={Link} 
+                <Button
+                  variant="contained"
+                  component={Link}
                   to={slide.link}
+                  color="primary"
                   sx={{
-                    px: { xs: 1.5, sm: 3 }, // Padding horizontal responsivo del botón
-                    py: { xs: 0.6, sm: 1.2 }, // Padding vertical responsivo del botón
-                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' }, // Font size responsivo del botón
-                    backgroundColor: '#d4a5a5',
-                    color: '#ffffff',
+                    px: { xs: 1.5, sm: 3 },
+                    py: { xs: 0.6, sm: 1.2 },
+                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' },
                     fontWeight: 600,
                     borderRadius: 2,
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      backgroundColor: '#e8c4c4',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 6px 20px rgba(212, 165, 165, 0.4)',
+                      boxShadow: '0 5px 15px rgba(212, 165, 165, 0.4)',
                     },
                   }}
                 >

@@ -126,7 +126,7 @@ function AdminProducts() {
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
-                  <Avatar src={product.image} alt={product.name} variant="square" />
+                  <Avatar src={product.imagenPath} alt={product.name} variant="square" />
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>${product.price}</TableCell>

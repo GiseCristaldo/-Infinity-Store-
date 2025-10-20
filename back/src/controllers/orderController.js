@@ -96,7 +96,7 @@ export const getUserOrders = async (req, res) => {
                             {
                                 model: Product, // Incluir el producto asociado a cada detalle
                                 as: 'product', // Alias para el producto
-                                attributes: ['name', 'imagenURL', 'price'] // Atributos del producto que queremos ver
+                                attributes: ['name', 'imagenPath', 'price'] // CORREGIDO: usar imagenPath
                             }
                         ]
             }],
@@ -166,7 +166,7 @@ export const getOrderById = async (req, res) => {
                 include: [{
                     model: Product,
                     as: 'product',
-                    attributes: ['name', 'price', 'imagenURL']
+                    attributes: ['name', 'price', 'imagenPath'] // CORREGIDO: usar imagenPath
                 }]
             }]
         });

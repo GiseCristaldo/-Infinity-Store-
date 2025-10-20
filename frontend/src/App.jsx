@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { CartProvider } from './context/CartContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import AppRoutes from './routes/AppRoutes.jsx';
+import { SearchProvider } from './context/SearchContext.jsx';
 
 
 function App() {
@@ -11,7 +12,9 @@ function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
-          <AppRoutes />
+          <SearchProvider>
+            <AppRoutes />
+          </SearchProvider>
         </CartProvider>
       </AuthProvider>
     </Router>

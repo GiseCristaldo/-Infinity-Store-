@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, Avatar } from '@mui/material';
+import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 function CategoryForm({ onSubmit, initialData = {} }) {
   const [name, setName] = useState('');
   const [imagenURL, setImagenURL] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
     // Si hay datos iniciales (para editar), rellenamos los campos
@@ -15,8 +18,10 @@ function CategoryForm({ onSubmit, initialData = {} }) {
     
     if (initialData.imagenURL) {
       setImagenURL(initialData.imagenURL);
+      setPreviewUrl(initialData.imagenURL);
     } else {
       setImagenURL(''); // Limpiamos para el modo 'crear'
+      setPreviewUrl('');
     }
   }, [initialData]);
 
@@ -26,8 +31,21 @@ function CategoryForm({ onSubmit, initialData = {} }) {
       alert('El nombre de la categoría no puede estar vacío.');
       return;
     }
-    // Si imagenURL está vacío, se usará una imagen por defecto en el backend
-    onSubmit({ name, imagenURL });
+    // Pasamos el archivo si existe; el servicio decidirá formato
+    onSubmit({ name, imagenURL, imageFile: selectedImage || null });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedImage(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setPreviewUrl('');
   };
 
   return (
@@ -54,8 +72,23 @@ function CategoryForm({ onSubmit, initialData = {} }) {
         name="imagenURL"
         value={imagenURL}
         onChange={(e) => setImagenURL(e.target.value)}
-        helperText="Si no se proporciona, se usará una imagen por defecto"
+        helperText="Opcional. También puedes subir un archivo abajo."
       />
+
+      <Box sx={{ mt: 2 }}>
+        <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}> 
+          Subir Imagen
+          <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+        </Button>
+        {previewUrl && (
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar src={previewUrl} alt="Preview" variant="square" sx={{ width: 100, height: 100 }} />
+            <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleRemoveImage}>
+              Quitar imagen
+            </Button>
+          </Box>
+        )}
+      </Box>
       <Button
         type="submit"
         fullWidth

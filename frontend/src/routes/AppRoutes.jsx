@@ -4,6 +4,7 @@ import { Container, Box, CircularProgress, Typography } from '@mui/material';
 
 // --- CORRECCIÓN DE RUTAS DE IMPORTACIÓN ---
 import ResponsiveAppBar from '../components/ResponsiveAppBar.jsx';
+import Footer from '../components/Footer.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import RequireAdmin from '../components/auth/RequireAdmin.jsx';
 import RequireAuth from '../components/auth/RequireAuth.jsx';
@@ -19,6 +20,9 @@ import ProfilePage from '../pages/ProfilePage.jsx';
 import OrdersPage from '../pages/OrdersPage.jsx';
 import OrderDetailPage from '../pages/OrderDetailPage.jsx';
 import AuthSuccessPage from '../pages/AuthSuccessPage.jsx';
+import FaqPage from '../pages/FaqPage.jsx';
+import EnviosPage from '../pages/EnviosPage.jsx';
+import ContactoPage from '../pages/ContactoPage.jsx';
 
 // --- Páginas de Administración ---
 import AdminLayout from '../pages/admin/AdminLayout.jsx';
@@ -33,14 +37,10 @@ import AdminOrders from '../pages/admin/AdminOrders.jsx';
 const PublicLayout = () => (
   <>
     <ResponsiveAppBar />
-    <Container sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
+    <Container sx={{ mt: 2, mb: 4, flexGrow: 1 }}>
       <Outlet />
     </Container>
-    <Box component="footer" sx={{ p: 2, mt: 'auto', backgroundColor: 'primary.dark', color: 'white', textAlign: 'center' }}>
-      <Typography variant="body2">
-        © {new Date().getFullYear()} Infinity Store. Todos los derechos reservados.
-      </Typography>
-    </Box>
+    <Footer />
   </>
 );
 
@@ -51,11 +51,7 @@ const AuthenticatedLayout = () => (
     <Container sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
       <Outlet />
     </Container>
-    <Box component="footer" sx={{ p: 2, mt: 'auto', backgroundColor: 'primary.dark', color: 'white', textAlign: 'center' }}>
-      <Typography variant="body2">
-        © {new Date().getFullYear()} Infinity Store. Todos los derechos reservados.
-      </Typography>
-    </Box>
+    <Footer />
   </RequireAuth>
 );
 
@@ -82,6 +78,9 @@ function AppRoutes() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/category/:id" element={<CategoryDetailPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/faq" element={<FaqPage />} />
+        <Route path="/envios" element={<EnviosPage />} />
+        <Route path="/contacto" element={<ContactoPage />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Route>
 

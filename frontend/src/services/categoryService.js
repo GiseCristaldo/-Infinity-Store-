@@ -19,24 +19,51 @@ export const getAllCategories = async () => {
 // Crear una nueva categoría (protegido)
 export const createCategory = async (categoryData) => {
   const token = getToken();
-  const response = await axios.post(API_URL, categoryData, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
+  let response;
+  if (categoryData.imageFile) {
+    const formData = new FormData();
+    formData.append('name', categoryData.name);
+    formData.append('image', categoryData.imageFile);
+    response = await axios.post(API_URL, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+  } else {
+    response = await axios.post(API_URL, categoryData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+  }
   return response.data;
 };
 
 // Actualizar una categoría (protegido)
 export const updateCategory = async (id, categoryData) => {
   const token = getToken();
-  const response = await axios.put(`${API_URL}/${id}`, categoryData, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
+  let response;
+  if (categoryData.imageFile) {
+    const formData = new FormData();
+    formData.append('name', categoryData.name);
+    if (categoryData.active !== undefined) formData.append('active', categoryData.active);
+    formData.append('image', categoryData.imageFile);
+    response = await axios.put(`${API_URL}/${id}`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+  } else {
+    response = await axios.put(`${API_URL}/${id}`, categoryData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+  }
   return response.data;
 };
 

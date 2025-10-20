@@ -22,6 +22,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { createOrder as createOrderService } from '../services/orderService.js';
 
 import { useCart } from '../context/CartContext.jsx';
 import { formatPrice } from '../utils/priceUtils.js';
@@ -127,23 +128,11 @@ function CartPage() {
       const orderData = {
         items: cartItems.map(item => ({
           productId: item.id,
-          quantity: item.quantity,
-          price: item.price
-        })),
-        total: getCartTotal(),
-        paymentMethod: 'credit_card',
-        paymentDetails: {
-          cardNumber: cardNumber.slice(-4),
-          expiryDate: expiryDate
-        }
+          amount: item.quantity
+        }))
       };
 
-      const response = await axios.post('http://localhost:3001/api/orders', orderData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await createOrderService(orderData);
 
       clearCart();
       setSnackbarMessage('¡Compra realizada exitosamente! Serás redirigido a tus órdenes.');
@@ -151,7 +140,7 @@ function CartPage() {
       setSnackbarOpen(true);
 
       setTimeout(() => {
-        navigate('/orders');
+        navigate('/mis-ordenes');
       }, 2000);
 
     } catch (error) {

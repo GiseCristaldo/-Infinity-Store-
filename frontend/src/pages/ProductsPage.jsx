@@ -1,11 +1,11 @@
 // src/pages/ProductsPage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { Typography, Box, Grid, Card, CardContent, CardMedia, Button, CircularProgress, Alert, Snackbar, Chip } from '@mui/material';
+import { Typography, Box, Grid, Card, CardContent, CardMedia, Button, CircularProgress, Alert, Snackbar, Chip, Pagination } from '@mui/material';
 import axios from 'axios';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import CategoryFilter from '../components/CategoryFilter.jsx';
-
 import { useCart } from '../context/CartContext.jsx'; // <-- Importa el hook useCart
+import { useSearch } from '../context/SearchContext.jsx';
+import SearchBar from '../components/SearchBar.jsx';
 
 function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -16,6 +16,9 @@ function ProductsPage() {
 
   const { addToCart, cartItems } = useCart(); // <-- Obtén addToCart y cartItems del contexto
   const [paginationInfo, setPaginationInfo] = useState(null);
+  const { query, sort } = useSearch();
+  const [page, setPage] = useState(1);
+  const limit = 12;
 
   // Estados para el Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -25,7 +28,7 @@ function ProductsPage() {
   const initialCategoryId = searchParams.get('category');
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId || null);
 
-  const fetchProducts = useCallback(async (categoryId) => {
+  const fetchProducts = useCallback(async (categoryId, currentPage, currentQuery, currentSort) => {
     try {
       setLoading(true);
       setError(null);
@@ -37,7 +40,14 @@ function ProductsPage() {
       if (categoryId) {
         params.append('category', categoryId);
       }
-      // Aquí podrías añadir parámetros de paginación en el futuro, ej: params.append('page', 1);
+      if (currentQuery) {
+        params.append('name', currentQuery);
+      }
+      params.append('page', currentPage || 1);
+      params.append('limit', limit);
+      if (currentSort) {
+        params.append('sort', currentSort);
+      }
       
       // Unimos la URL con los parámetros
       const finalUrl = `${url}?${params.toString()}`;
@@ -61,20 +71,31 @@ function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [limit]);
 
   useEffect(() => {
-    fetchProducts(selectedCategoryId);
+    // Reiniciar a la primera página cuando cambie la categoría, la búsqueda o el orden
+    setPage((prev) => (prev === 1 ? prev : 1));
+  }, [selectedCategoryId, query, sort]);
 
-    if (selectedCategoryId) {
-      setSearchParams({ category: selectedCategoryId });
-    } else {
-      setSearchParams({});
-    }
-  }, [fetchProducts, selectedCategoryId, setSearchParams]);
+  useEffect(() => {
+    fetchProducts(selectedCategoryId, page, query, sort);
+
+    const params = {};
+    if (selectedCategoryId) params.category = selectedCategoryId;
+    if (query) params.name = query;
+    if (sort) params.sort = sort;
+    params.page = page;
+    setSearchParams(params);
+  }, [fetchProducts, selectedCategoryId, query, sort, page, setSearchParams]);
 
   const handleSelectCategory = (categoryId) => {
     setSelectedCategoryId(categoryId);
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Función para añadir al carrito (usando el contexto)
@@ -133,6 +154,9 @@ function ProductsPage() {
       <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center', color: 'secondary.main' }}>
         Nuestro Catálogo Geek
       </Typography>
+      <Box sx={{ mt: 2, mb: 3 }}>
+        <SearchBar />
+      </Box>
 
       <CategoryFilter
         onSelectCategory={handleSelectCategory}
@@ -318,6 +342,17 @@ function ProductsPage() {
                 </Card>
             );
           })}
+        </Box>
+      )}
+
+      {paginationInfo?.totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={paginationInfo.totalPages}
+            page={paginationInfo.currentPage || page}
+            onChange={handlePageChange}
+            color="primary"
+          />
         </Box>
       )}
 

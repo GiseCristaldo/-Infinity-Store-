@@ -1,10 +1,12 @@
 // src/pages/CategoryDetailPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Alert, Container, Grid, Card, CardMedia, CardContent, Button, Snackbar, Chip } from '@mui/material';
+import { Typography, Box, CircularProgress, Alert, Container, Grid, Card, CardMedia, CardContent, Button, Snackbar, Chip, Pagination } from '@mui/material';
 import axios from 'axios';
+import { useSearch } from '../context/SearchContext.jsx';
 
 import { useCart } from '../context/CartContext.jsx'; // importamos el contexto del carrito
+import SearchBar from '../components/SearchBar.jsx';
 
 /**
  * Página que muestra los productos de una categoría específica.
@@ -17,6 +19,10 @@ function CategoryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const limit = 12;
+  const [paginationInfo, setPaginationInfo] = useState(null);
+  const { query, sort } = useSearch();
 
   const { addToCart, cartItems } = useCart(); // <-- traemos las funciones y el estado del carrito del contexto
 
@@ -35,10 +41,27 @@ function CategoryDetailPage() {
         const categoryResponse = await axios.get(`http://localhost:3001/api/categories/${id}`);
         setCategoryName(categoryResponse.data.name);
 
-        const productsResponse = await axios.get(`http://localhost:3001/api/products?category=${id}`);
-        // El backend ahora devuelve un objeto con la propiedad 'products'
+        const params = new URLSearchParams();
+        params.append('category', id);
+        if (query) params.append('name', query);
+        params.append('page', page);
+        params.append('limit', limit);
+        if (sort) params.append('sort', sort);
+
+        const productsResponse = await axios.get(`http://localhost:3001/api/products?${params.toString()}`);
         const productsArray = productsResponse.data.products || productsResponse.data;
-        setProducts(Array.isArray(productsArray) ? productsArray.filter(p => p.active) : []); // Aca me aseguro de mostrar solo productos activos
+        setProducts(Array.isArray(productsArray) ? productsArray.filter(p => p.active) : []);
+
+        // Guardar información de paginación si viene del backend
+        if (productsResponse.data && typeof productsResponse.data === 'object') {
+          setPaginationInfo({
+            totalItems: productsResponse.data.totalItems,
+            totalPages: productsResponse.data.totalPages,
+            currentPage: productsResponse.data.currentPage,
+          });
+        } else {
+          setPaginationInfo(null);
+        }
       } catch (err) {
         console.error('Error al cargar la categoría o sus productos:', err);
         setError('No se pudo cargar la categoría o sus productos. Inténtalo de nuevo.');
@@ -51,7 +74,12 @@ function CategoryDetailPage() {
     };
 
     fetchCategoryAndProducts();
-  }, [id]);
+  }, [id, page, query, sort]);
+
+  // Reiniciar página al cambiar categoría o búsqueda
+  useEffect(() => {
+    setPage(1);
+  }, [id, query, sort]);
 
   // Función para añadir al carrito (ahora usamos el contexto)
   const handleAddToCart = (productToAdd) => {
@@ -77,6 +105,11 @@ function CategoryDetailPage() {
     setSnackbarMessage(`"${productToAdd.name}" añadido al carrito.`);
     setSnackbarSeverity('success');
     setSnackbarOpen(true);
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handler para cerrar el Snackbar
@@ -109,6 +142,9 @@ function CategoryDetailPage() {
       <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center', mb: 4, color: 'secondary.main' }}>
         Productos de {categoryName}
       </Typography>
+      <Box sx={{ mt: 2, mb: 3 }}>
+        <SearchBar />
+      </Box>
 
       {products.length === 0 ? (
         <Box sx={{ mt: 4, textAlign: 'center' }}>
@@ -271,6 +307,17 @@ function CategoryDetailPage() {
               </Card>
             );
           })}
+        </Box>
+      )}
+
+      {paginationInfo?.totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={paginationInfo.totalPages}
+            page={paginationInfo.currentPage || page}
+            onChange={handlePageChange}
+            color="primary"
+          />
         </Box>
       )}
       <Snackbar
