@@ -283,7 +283,7 @@ function CartPage() {
 
       <Grid container spacing={{ xs: 2, md: 4 }}>
         {/* Lista de productos */}
-        <Grid item xs={12} lg={8}>
+        <Grid item xs={12} md={8}>
           <Box sx={{ 
             backgroundColor: '#ffffff',
             borderRadius: 3,
@@ -293,8 +293,8 @@ function CartPage() {
             boxShadow: currentSettings?.color_palette ? 
               `0 8px 24px ${currentSettings.color_palette.primary_color}15` :
               '0 4px 12px rgba(0,0,0,0.1)',
-            height: { xs: 'auto', lg: '600px' },
-            maxHeight: { xs: '70vh', lg: '600px' },
+            height: { xs: 'auto', md: '600px' },
+            maxHeight: { xs: '70vh', md: '600px' },
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -579,7 +579,7 @@ function CartPage() {
         </Grid>
 
         {/* Resumen y checkout */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} md={4}>
           <Box sx={{ 
             p: { xs: 2, sm: 3 },
             backgroundColor: '#ffffff',
@@ -590,8 +590,8 @@ function CartPage() {
             boxShadow: currentSettings?.color_palette ? 
               `0 8px 24px ${currentSettings.color_palette.primary_color}15` :
               '0 4px 12px rgba(0,0,0,0.1)',
-            height: { xs: 'auto', lg: '600px' },
-            minHeight: { xs: 'auto', lg: '600px' },
+            height: { xs: 'auto', md: '600px' },
+            minHeight: { xs: 'auto', md: '600px' },
             display: 'flex',
             flexDirection: 'column'
           }}>
