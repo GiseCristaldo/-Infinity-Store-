@@ -2,6 +2,7 @@ import express from 'express';
 import {
   registerUser,
   loginUser,
+  loginSuperAdmin,
   googleAuthHandler,
   getLoggedUser
 } from '../controllers/userController.js';
@@ -12,7 +13,8 @@ const router = express.Router();
 
 // Rutas de autenticación (no protegidas)
 router.post('/register', registerUser); 
-router.post('/login', loginUser);       
+router.post('/login', loginUser);
+router.post('/super-admin/login', loginSuperAdmin);       
 router.post('/google', googleAuthHandler);
 
 // Ruta protegida para obtener datos del usuario logueado

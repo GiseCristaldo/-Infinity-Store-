@@ -100,7 +100,7 @@ export const updateProduct = async (id, productData) => {
       formData.append('images', file);
     });
 
-    // Encontrar cuál imagen debe ser principal
+    // Encontrar cuál imagen debe ser principal (índice relativo a previews)
     const primaryImageIndex = productData.images.findIndex(img => img.isPrimary);
     if (primaryImageIndex !== -1) {
       formData.append('primaryImageIndex', primaryImageIndex);
@@ -114,18 +114,28 @@ export const updateProduct = async (id, productData) => {
     });
     return response.data;
   } else {
-    // Solo actualizar datos del producto sin cambiar imágenes
-    const response = await axios.put(`${API_URL}/${id}`, {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      stock: productData.stock,
-      categoryId: productData.categoryId,
-      existingImages: productData.images ? JSON.stringify(productData.images.filter(img => img.isExisting)) : undefined
-    }, {
+    // SIN nuevas imágenes: aún necesitamos actualizar qué imagen es principal.
+    // Enviar a la ruta with-files con FormData, sólo con imágenes existentes y primaryImageIndex.
+    const formData = new FormData();
+
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('price', productData.price);
+    formData.append('stock', productData.stock);
+    formData.append('categoryId', productData.categoryId);
+
+    if (productData.images) {
+      formData.append('existingImages', JSON.stringify(productData.images.filter(img => img.isExisting)));
+      const primaryImageIndex = productData.images.findIndex(img => img.isPrimary);
+      if (primaryImageIndex !== -1) {
+        formData.append('primaryImageIndex', primaryImageIndex);
+      }
+    }
+
+    const response = await axios.put(`${API_URL}/${id}/with-files`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       }
     });
     return response.data;

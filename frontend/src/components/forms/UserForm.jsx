@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material';
 
-function UserForm({ onSubmit, initialData = {}, isEdit = false }) {
+function UserForm({ onSubmit, initialData = {}, isEdit = false, currentUserRole = 'admin' }) {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -87,9 +87,17 @@ function UserForm({ onSubmit, initialData = {}, isEdit = false }) {
           onChange={handleChange}
         >
           <MenuItem value="cliente">Cliente</MenuItem>
-          <MenuItem value="admin">Administrador</MenuItem>
+          {currentUserRole === 'super_admin' && (
+            <MenuItem value="admin">Administrador</MenuItem>
+          )}
         </Select>
       </FormControl>
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+        {currentUserRole === 'super_admin' 
+          ? 'Como Super Administrador, puedes crear usuarios Cliente y Administrador.'
+          : 'Los administradores solo pueden crear usuarios con rol de Cliente. Para crear Administradores, contacte al Super Administrador.'
+        }
+      </Typography>
       <Button
         type="submit"
         fullWidth

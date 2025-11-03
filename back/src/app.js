@@ -10,27 +10,44 @@ import orderRoutes from './routes/order.routes.js';
 import productRoutes from './routes/product.routes.js'; 
 import userRoutes from './routes/user.routes.js'; // <-- NUEVA IMPORTACIÓN
 import fileRoutes from './routes/file.routes.js';
+import chatRoutes from './routes/chat.routes.js';
+import contactRoutes from './routes/contact.routes.js';
+import newsletterRoutes from './routes/newsletter.routes.js';
+import superAdminRoutes from './routes/superAdminRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import settingsRoutes from './routes/settings.routes.js';
+import imageRoutes from './routes/imageRoutes.js';
 
 dotenv.config();
 
 const app = express();
 
 // Configuración de CORS para permitir solicitudes desde el frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://localhost:5173',
+  'https://localhost:5174',
+  'https://infinity-store-frontend.vercel.app'
+];
+
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'https://localhost:5173',
-    'https://localhost:5174',
-    'https://infinity-store-frontend.vercel.app',
-    'https://*.vercel.app'
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Permitir clientes no navegador (curl, servidores)
+    const vercelRegex = /^https:\/\/.+\.vercel\.app$/;
+    if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS bloqueado para origen: ${origin}`));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
   credentials: true,
-  optionsSuccessStatus: 200 // Para soportar navegadores legacy
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Configuración de encabezados de seguridad
 app.use(helmet({
@@ -85,8 +102,29 @@ app.use('/api/categories', categoryRoutes);
 // 5. GESTIÓN DE PEDIDOS: Prefijo /api/orders
 app.use('/api/orders', orderRoutes);
 
+// Chatbot: Prefijo /api/chat
+app.use('/api/chat', chatRoutes);
+
 // 6. GESTIÓN DE ARCHIVOS: Prefijo /api/files
 app.use('/api/files', fileRoutes);
+
+// 7. CONTACTO: Prefijo /api/contact
+app.use('/api/contact', contactRoutes);
+
+// 8. NEWSLETTER: Prefijo /api/newsletter
+app.use('/api/newsletter', newsletterRoutes);
+
+// 9. SUPER ADMIN: Prefijo /api/super-admin
+app.use('/api/super-admin', superAdminRoutes);
+
+// 10. ADMIN: Prefijo /api/admin
+app.use('/api/admin', adminRoutes);
+
+// 11. PUBLIC SETTINGS: Prefijo /api/settings
+app.use('/api/settings', settingsRoutes);
+
+// 12. IMAGE MANAGEMENT: Prefijo /api/customization
+app.use('/api/customization', imageRoutes);
 
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {
@@ -110,7 +148,7 @@ const startServer = async () => {
     console.log('✅ Conexión a la base de datos establecida correctamente.');
     
     // Sincronizar modelos (crear tablas si no existen)
-    await sequelize.sync({ alter: false }); // Cambiado de true a false para evitar cambios automáticos
+    await sequelize.sync({ alter: false }); // Desactivar alteraciones automáticas
     console.log('✅ Modelos sincronizados correctamente.');
     
     // Iniciar el servidor

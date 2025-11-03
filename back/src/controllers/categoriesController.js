@@ -38,11 +38,13 @@ export const createCategory = async (req, res) => {
             return res.status(400).json({ message: 'El nombre es obligatorio.' });
         }
 
-        // Si se sube un archivo, usar su path; si no, usar placeholder
-        const imagePath = req.file ? req.file.path : null;
-        const imagenURL = imagePath 
-            ? `http://localhost:3001/${imagePath}`
-            : 'https://via.placeholder.com/200x200?text=Categoria';
+        // Usar solo archivo subido; si no hay, usar placeholder
+        let imagenURL;
+        if (req.file) {
+            imagenURL = `http://localhost:3001/${req.file.path}`;
+        } else {
+            imagenURL = 'https://via.placeholder.com/200x200?text=Categoria';
+        }
 
         const newCategory = await Category.create({ 
             name, 
@@ -67,9 +69,11 @@ export const updateCategory = async (req, res) => {
             return res.status(404).json({ message: 'Categoría no encontrada' });
         }
 
-        // Si se sube un archivo, usar su path como nueva imagen
-        const imagePath = req.file ? req.file.path : null;
-        const newImagenURL = imagePath ? `http://localhost:3001/${imagePath}` : undefined;
+        // Usar nueva imagen solo si se sube archivo
+        let newImagenURL;
+        if (req.file) {
+            newImagenURL = `http://localhost:3001/${req.file.path}`;
+        }
 
         category.name = name || category.name;
         if (newImagenURL) category.imagenURL = newImagenURL;

@@ -9,7 +9,7 @@ export const User = sequelize.define('User', {
         allowNull: false
     },
     nombre: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(100), // Aumentado de 50 a 100 caracteres
         allowNull: false
     },
     email: {
@@ -26,7 +26,7 @@ export const User = sequelize.define('User', {
         allowNull: false
     },
     rol: {
-        type: DataTypes.ENUM('cliente', 'admin'), // Definimos los roles posibles
+        type: DataTypes.ENUM('cliente', 'admin', 'super_admin'), // Definimos los roles posibles
         defaultValue: 'cliente', // El rol por defecto será 'cliente'
         allowNull: false
     },
@@ -38,6 +38,11 @@ export const User = sequelize.define('User', {
     date_register: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW, // Fecha de registro por defecto a la fecha actual
+        allowNull: false
+    },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true, // Users are active by default
         allowNull: false
     }
 }, {

@@ -5,27 +5,28 @@ import { alpha } from '@mui/material/styles';
 import { useSearch } from '../context/SearchContext.jsx';
 import { useLocation } from 'react-router-dom';
 
-function SearchBar() {
+function SearchBar({ compact = false }) {
   const { query, setQuery, sort, setSort } = useSearch();
   const location = useLocation();
   const isListingPage = location.pathname.startsWith('/products') || location.pathname.startsWith('/category/');
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: compact ? 1 : 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: compact ? 1 : 2 }}>
         <Box sx={{ flexGrow: 1 }}>
+          {/* buscador */}
           <TextField
             fullWidth
-            size="small"
+            size={compact ? 'medium' : 'small'}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar productos geek..."
+            placeholder={compact ? 'Buscar' : 'Buscar productos geek...'}
             variant="outlined"
             color="primary"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'text.secondary' }} />
+                  <SearchIcon sx={{ color: 'text.secondary', fontSize: compact ? 14 : 24 }} />
                 </InputAdornment>
               ),
             }}
@@ -37,6 +38,13 @@ function SearchBar() {
                 '& fieldset': { borderColor: 'primary.light' },
                 '&:hover fieldset': { borderColor: 'primary.main' },
                 '&.Mui-focused fieldset': { borderColor: 'primary.main' },
+                minHeight: compact ? 36 : 40,
+                '& .MuiInputAdornment-root': { mr: compact ? 0.125 : 1 },
+              },
+              '& .MuiInputBase-input': {
+                fontSize: compact ? '0.95rem' : '0.95rem',
+                paddingTop: compact ? '6px' : undefined,
+                paddingBottom: compact ? '6px' : undefined,
               },
               '& .MuiInputBase-input::placeholder': { color: 'text.secondary', opacity: 1 },
             }}
@@ -44,20 +52,24 @@ function SearchBar() {
         </Box>
 
         {isListingPage && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-              Ordenar por:
-            </Typography>
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            {!compact && (
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                Ordenar por:
+              </Typography>
+            )}
+            <FormControl size={compact ? 'small' : 'medium'} sx={{ minWidth: { xs: 120, sm: 180 } }}>
               <Select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 displayEmpty
                 sx={{
-                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
                   borderRadius: 9999,
-                  fontSize: '0.78rem',
-                  '& .MuiSelect-select': { py: 0.25 },
+                  fontSize: compact ? '0.85rem' : '0.95rem',
+                  fontWeight: 500,
+                  height: compact ? 36 : 44,
+                  '& .MuiSelect-select': { py: compact ? 0.5 : 1, px: 1.5 },
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.light' },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },

@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   useMediaQuery,
-  useTheme,
+  useTheme as useMuiTheme,
   Badge, // <-- Importa Badge
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -26,10 +26,17 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import GroupIcon from '@mui/icons-material/Group';
+import PaletteIcon from '@mui/icons-material/Palette';
+import FontDownloadIcon from '@mui/icons-material/FontDownload';
+import ImageIcon from '@mui/icons-material/Image';
+import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
+import HistoryIcon from '@mui/icons-material/History';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx'; // <-- Importa el hook useCart
 import { useAuth } from '../context/AuthContext.jsx'; // Importa useAuth
+import { useTheme } from '../context/ThemeContext.jsx'; // Importa useTheme para branding dinámico
 
 // Definición de las páginas principales (para el centro en desktop y móvil)
 const mainPages = [
@@ -59,17 +66,33 @@ const adminPages = [
   { name: 'Gestionar Usuarios', path: '/admin/users', icon: <GroupIcon />, requiresAdmin: true },
 ];
 
+// Definición de las opciones de super administración
+const superAdminPages = [
+  { name: 'Super Admin Dashboard', path: '/super-admin', icon: <SupervisorAccountIcon />, requiresSuperAdmin: true },
+  { name: 'Gestionar Admins', path: '/super-admin/admins', icon: <GroupIcon />, requiresSuperAdmin: true },
+  { name: 'Personalizar Tema', path: '/super-admin/theme', icon: <PaletteIcon />, requiresSuperAdmin: true },
+  { name: 'Tipografía', path: '/super-admin/typography', icon: <FontDownloadIcon />, requiresSuperAdmin: true },
+  { name: 'Gestionar Imágenes', path: '/super-admin/images', icon: <ImageIcon />, requiresSuperAdmin: true },
+  { name: 'Configurar Marca', path: '/super-admin/branding', icon: <BrandingWatermarkIcon />, requiresSuperAdmin: true },
+  { name: 'Historial de Cambios', path: '/super-admin/history', icon: <HistoryIcon />, requiresSuperAdmin: true },
+];
+
 function ResponsiveAppBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const muiTheme = useMuiTheme();
+  const isDesktop = useMediaQuery(muiTheme.breakpoints.up('md'));
 
   const { getTotalItemsInCart } = useCart(); // Usa el hook para obtener la cantidad total
   const { isAuthenticated, user, logout } = useAuth(); // Obtiene el estado de autenticación y el usuario del AuthContext
+  const { currentSettings } = useTheme(); // Obtiene la configuración de branding dinámico
 
-  // Determinar si el usuario es administrador
+  // Get dynamic site name or fallback to default
+  const siteName = currentSettings?.site_name || 'Infinity Store';
+
+  // Determinar si el usuario es administrador o super administrador
   const isAdminUser = isAuthenticated && user?.rol === 'admin';
+  const isSuperAdminUser = isAuthenticated && user?.rol === 'super_admin';
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -95,8 +118,15 @@ function ResponsiveAppBar() {
   // Contenido del Drawer (menú lateral para móvil)
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'text.primary', height: '100%' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Infinity Store
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          my: 2, 
+          fontFamily: 'var(--font-heading)',
+          color: '#ffffff'
+        }}
+      >
+        {siteName}
       </Typography>
         {/* Mostrar nombre de usuario en el drawer si está autenticado */}
         {isAuthenticated && (
@@ -182,18 +212,55 @@ function ResponsiveAppBar() {
             ))}
           </>
         )}
+
+        {/* Opciones de super administración para móvil (solo si es super admin) */}
+        {isSuperAdminUser && (
+          <>
+            <Typography variant="caption" sx={{ mt: 2, mb: 1, display: 'block', color: 'text.secondary', pl: 2 }}>
+              Super Administración
+            </Typography>
+            {superAdminPages.map((page) => (
+              <ListItem key={page.name} disablePadding>
+                <ListItemButton component={Link} to={page.path} onClick={() => handleMenuItemClick(page.path)} sx={{ textAlign: 'left' }}>
+                  <ListItemIcon sx={{ color: 'text.primary' }}>{page.icon}</ListItemIcon>
+                  <ListItemText primary={page.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </>
+        )}
       </List>
     </Box>
   );
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: 'primary.main', borderRadius: 0 }}>
+    <AppBar 
+      position="static" 
+      sx={{ 
+        backgroundColor: 'var(--color-primary)', 
+        borderRadius: 0,
+        '& .MuiToolbar-root': {
+          backgroundColor: 'var(--color-primary)',
+        }
+      }}
+    >
       <Toolbar sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Sección Izquierda: Logo/Título */}
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <Typography variant="h6" component="div">
-            <Link to="/" style={{ textDecoration: 'none', color: theme.palette.primary.contrastText }}>
-              Infinity Store 🚀
+          <Typography 
+            variant="h6" 
+            component="div"
+            sx={{ fontFamily: 'var(--font-heading)' }}
+          >
+            <Link 
+              to="/" 
+              style={{ 
+                textDecoration: 'none', 
+                color: '#ffffff',
+                fontFamily: 'inherit'
+              }}
+            >
+              {siteName} 🚀
             </Link>
           </Typography>
         </Box>
@@ -208,7 +275,12 @@ function ResponsiveAppBar() {
                 component={Link}
                 to={page.path}
                 startIcon={page.icon}
-                sx={{ mx: 1.5, '&:hover': { backgroundColor: 'primary.light' } }}
+                sx={{ 
+                  mx: 1.5, 
+                  fontFamily: 'var(--font-primary)',
+                  color: '#ffffff',
+                  '&:hover': { backgroundColor: 'var(--color-primary-light)' } 
+                }}
               >
                 {page.name}
               </Button>
@@ -266,6 +338,17 @@ function ResponsiveAppBar() {
                   sx={{ '&:hover': { backgroundColor: 'primary.light' } }}
                 >
                   <DashboardIcon />
+                </IconButton>
+              )}
+              {isAuthenticated && isSuperAdminUser && (
+                <IconButton
+                  color="inherit"
+                  component={Link}
+                  to="/super-admin"
+                  title="Panel de Super Admin"
+                  sx={{ '&:hover': { backgroundColor: 'primary.light' } }}
+                >
+                  <SupervisorAccountIcon />
                 </IconButton>
               )}
               {isAuthenticated && (

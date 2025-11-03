@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
 import { Container, Typography, Box, TextField, Button, Snackbar, Paper } from '@mui/material';
+import axios from 'axios';
+import { Alert } from '@mui/material';
+import { API_ENDPOINTS } from '../config/api.js';
 
 export default function ContactoPage() {
   const [form, setForm] = useState({ nombre: '', email: '', mensaje: '' });
   const [open, setOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const endpoint = API_ENDPOINTS.CONTACT.SUBMIT || '/api/contact';
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleSubmit = (e) => { e.preventDefault(); setOpen(true); setForm({ nombre: '', email: '', mensaje: '' }); };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    try {
+      await axios.post(endpoint, form);
+      setOpen(true);
+      setForm({ nombre: '', email: '', mensaje: '' });
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'No pudimos enviar tu mensaje.');
+      setOpen(true);
+    }
+  };
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
@@ -82,7 +99,11 @@ export default function ContactoPage() {
         />
         <Button type="submit" variant="contained" color="primary" fullWidth>Enviar</Button>
       </Paper>
-      <Snackbar open={open} autoHideDuration={2500} onClose={() => setOpen(false)} message="¡Gracias por contactarnos!" />
+      <Snackbar open={open} autoHideDuration={2500} onClose={() => setOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setOpen(false)} severity={errorMsg ? 'error' : 'success'} sx={{ width: '100%' }}>
+          {errorMsg || '¡Gracias por contactarnos!'}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

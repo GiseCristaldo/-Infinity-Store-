@@ -5,7 +5,10 @@ import { Product } from './Product.js';
 import { User } from './User.js'; 
 import { Order } from './Order.js'; 
 import { OrderDetail } from './OrderDetail.js';
-import { File } from './File.js'; 
+import { File } from './File.js';
+import { ColorPalette } from './ColorPalette.js';
+import { SiteSettings } from './SiteSettings.js';
+import { CustomizationHistory } from './CustomizationHistory.js'; 
 
 
 // --- Definición de Relaciones (Asociaciones) ---
@@ -65,6 +68,41 @@ File.belongsTo(Product, {
   as: 'product'
 });
 
+// Relaciones para el sistema de personalización
+
+// Relación entre SiteSettings y ColorPalette: SiteSettings tiene una paleta activa (N:1)
+SiteSettings.belongsTo(ColorPalette, {
+  foreignKey: 'active_palette_id',
+  as: 'activePalette'
+});
+
+ColorPalette.hasMany(SiteSettings, {
+  foreignKey: 'active_palette_id',
+  as: 'siteSettings'
+});
+
+// Relación entre SiteSettings y User: SiteSettings fue actualizado por un usuario (N:1)
+SiteSettings.belongsTo(User, {
+  foreignKey: 'updated_by',
+  as: 'updatedByUser'
+});
+
+User.hasMany(SiteSettings, {
+  foreignKey: 'updated_by',
+  as: 'updatedSettings'
+});
+
+// Relación entre CustomizationHistory y User: Historial fue creado por un usuario (N:1)
+CustomizationHistory.belongsTo(User, {
+  foreignKey: 'changed_by',
+  as: 'user'
+});
+
+User.hasMany(CustomizationHistory, {
+  foreignKey: 'changed_by',
+  as: 'customizationHistory'
+});
+
 // Exportar todos los modelos y la instancia de sequelize
 export {
   sequelize,
@@ -74,4 +112,7 @@ export {
   Order, 
   OrderDetail,
   File,
+  ColorPalette,
+  SiteSettings,
+  CustomizationHistory,
 };

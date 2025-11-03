@@ -94,34 +94,34 @@ export const CARD_STYLES = {
   }
 };
 
-// Paleta específica para el panel de administración (inspirada en ejemplo)
+// Paleta específica para el panel de administración (neutral solicitada)
 export const ADMIN_COLORS = {
   primary: {
-    main: '#f28aa0',
-    light: '#f9c2cf',
-    dark: '#d96a84',
+    main: '#a0b4c8',     // Cadet Blue (Crayola)
+    light: '#c8dcf0',    // Columbia Blue
+    dark: '#b4b4dc',     // Maximum Blue Purple
     contrastText: '#ffffff'
   },
   secondary: {
-    main: '#f5b7b1',
-    light: '#fde1dc',
-    dark: '#e79a93',
-    contrastText: '#ffffff'
+    main: '#b4b4dc',
+    light: '#c8dcf0',
+    dark: '#a0b4c8',
+    contrastText: '#141414'
   },
   text: {
-    primary: '#1f1f1f',
-    secondary: '#6f5a5a',
-    light: '#1f1f1f'
+    primary: '#141414',  // contraste legible
+    secondary: '#a0b4c8',
+    light: '#141414'
   },
   background: {
-    gradient: 'linear-gradient(135deg, #ffe4ea, #f9d6d9)',
-    paper: '#ffffff',
-    overlay: 'rgba(242, 138, 160, 0.08)',
-    default: '#fdfdfd'
+    gradient: 'linear-gradient(135deg, #ffffff, #f0f0f0)',
+    paper: '#ffffff',    // White
+    overlay: 'rgba(160, 180, 200, 0.12)', // sutil con Cadet Blue
+    default: '#f0f0f0'   // Anti-Flash White
   },
   shadows: {
-    light: '0 4px 12px rgba(242, 138, 160, 0.25)',
-    medium: '0 6px 20px rgba(242, 138, 160, 0.35)',
-    heavy: '0 8px 32px rgba(242, 138, 160, 0.18)'
+    light: '0 4px 12px rgba(160, 180, 200, 0.20)',
+    medium: '0 6px 20px rgba(160, 180, 200, 0.30)',
+    heavy: '0 8px 32px rgba(160, 180, 200, 0.18)'
   }
 };

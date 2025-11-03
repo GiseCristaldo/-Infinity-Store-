@@ -1,104 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Avatar } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Button, TextField, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
-function CategoryForm({ onSubmit, initialData = {} }) {
-  const [name, setName] = useState('');
-  const [imagenURL, setImagenURL] = useState('');
+const CategoryForm = ({ initialData = {}, onSubmit }) => {
+  const [name, setName] = useState(initialData.name || '');
   const [selectedImage, setSelectedImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(initialData.imagenURL || '');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Si hay datos iniciales (para editar), rellenamos los campos
-    if (initialData.name) {
-      setName(initialData.name);
-    } else {
-      setName(''); // Limpiamos para el modo 'crear'
-    }
-    
-    if (initialData.imagenURL) {
-      setImagenURL(initialData.imagenURL);
-      setPreviewUrl(initialData.imagenURL);
-    } else {
-      setImagenURL(''); // Limpiamos para el modo 'crear'
-      setPreviewUrl('');
-    }
+    setName(initialData.name || '');
+    // Mantiene la imagen actual como preview si existe
+    setPreviewUrl(initialData.imagenURL || '');
+    setSelectedImage(null);
   }, [initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim()) {
-      alert('El nombre de la categoría no puede estar vacío.');
-      return;
-    }
-    // Pasamos el archivo si existe; el servicio decidirá formato
-    onSubmit({ name, imagenURL, imageFile: selectedImage || null });
+    onSubmit({ name, imageFile: selectedImage || null });
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSelectedImage(file);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    const file = e.target.files[0];
+    setSelectedImage(file || null);
+    setPreviewUrl(file ? URL.createObjectURL(file) : '');
   };
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        Los campos marcados con * son obligatorios
-      </Typography>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <TextField
-        margin="normal"
-        required
-        fullWidth
-        id="name"
-        label="Nombre de la Categoría"
-        name="name"
-        autoFocus
+        label="Nombre de la categoría"
         value={name}
         onChange={(e) => setName(e.target.value)}
-      />
-      <TextField
-        margin="normal"
-        fullWidth
-        id="imagenURL"
-        label="URL de la Imagen (opcional)"
-        name="imagenURL"
-        value={imagenURL}
-        onChange={(e) => setImagenURL(e.target.value)}
-        helperText="Opcional. También puedes subir un archivo abajo."
+        required
       />
 
-      <Box sx={{ mt: 2 }}>
-        <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}> 
-          Subir Imagen
-          <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-        </Button>
+      <Box>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Imagen (solo archivo)</Typography>
         {previewUrl && (
-          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar src={previewUrl} alt="Preview" variant="square" sx={{ width: 100, height: 100 }} />
-            <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleRemoveImage}>
-              Quitar imagen
-            </Button>
+          <Box sx={{ mb: 1, position: 'relative', display: 'inline-block' }}>
+            <img src={previewUrl} alt="Preview" style={{ maxWidth: '200px', borderRadius: 4 }} />
+            <IconButton
+              size="small"
+              onClick={handleRemoveImage}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)'
+              }}
+              aria-label="Eliminar imagen"
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
           </Box>
         )}
+        <Button variant="contained" component="label">
+          Subir imagen
+          <input type="file" accept="image/*" hidden onChange={handleFileChange} ref={fileInputRef} />
+        </Button>
       </Box>
-      <Button
-        type="submit"
-        fullWidth
-        variant="contained"
-        sx={{ mt: 3, mb: 2 }}
-      >
-        {initialData.id ? 'Guardar Cambios' : 'Crear Categoría'}
+
+      <Button type="submit" variant="contained" color="primary">
+        Guardar categoría
       </Button>
     </Box>
   );
-}
+};
 
 export default CategoryForm;

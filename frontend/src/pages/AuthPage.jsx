@@ -12,72 +12,16 @@ import {
   Tabs,
   Tab,
   CircularProgress,
-  ThemeProvider,
-  createTheme,
 } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'; 
+import { useTheme } from '../context/ThemeContext.jsx';
+import { API_ENDPOINTS } from '../config/api.js';
 
 // ----------------------------------------------------------------------
-// CONFIGURACIÓN DEL TEMA (Tema basado en Rosa/Magenta)
-// ----------------------------------------------------------------------
-const pinkTheme = createTheme({
-  palette: {
-    primary: {
-      main: '#3F51B5', // Azul primario base (Mantener para consistencia de Material-UI si es necesario)
-    },
-    secondary: {
-      main: "#d4a5a5",// Rosa suave para acentos y botones
-      light: '#39002C',
-    },
-    background: {
-      // Usaremos un fondo blanco para el Paper (modal) y un gris claro para el fondo principal
-      default: '#f5f5f5', 
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#333333',
-      secondary: '#777777',
-    },
-  },
-  typography: {
-    fontFamily: 'Inter, Arial, sans-serif',
-  },
-  components: {
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          // Simplificamos la apariencia de los inputs
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 8,
-            backgroundColor: '#f5f5f5',
-            '& fieldset': {
-              borderColor: '#e0e0e0',
-            },
-            '&:hover fieldset': {
-              borderColor: '#d4a5a5',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#e91e63',
-            },
-          },
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        containedSecondary: {
-          boxShadow: '0 4px 10px rgba(249, 29, 209, 0.47)', // Sombra para el botón rosa
-          '&:hover': {
-            boxShadow: '0 6px 15px rgba(233, 30, 203, 0.6)',
-          },
-        },
-      },
-    },
-  },
-});
+// DYNAMIC THEME INTEGRATION
 // ----------------------------------------------------------------------
 
 // Constantes de configuración de Google Sign-In (GSI)
@@ -97,6 +41,9 @@ function AuthPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
+  
+  // Use dynamic theme
+  const { currentSettings } = useTheme();
   const [successMessage, setSuccessMessage] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -404,8 +351,7 @@ function AuthPage() {
 
   setLoading(true); 
   try { 
-    // URL ajustada para consistencia con el BASE_URL 
-    const response = await axios.post(`${BASE_URL}/api/users/register`, { 
+    const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, { 
       nombre: name, 
       email, 
       password, 
@@ -428,8 +374,7 @@ function AuthPage() {
 };
 
   return (
-    // Se envuelve todo en ThemeProvider para aplicar la nueva paleta de colores
-    <ThemeProvider theme={pinkTheme}>
+    // Use dynamic theme colors
         <Box
           sx={{
             display: 'flex',
@@ -437,8 +382,10 @@ function AuthPage() {
             alignItems: 'center',
             mt: 4,
             mb: 4,
-            // Aplicar un fondo suave al body
-            backgroundColor: pinkTheme.palette.background.default, 
+            // Use dynamic background
+            background: currentSettings?.color_palette ? 
+              `linear-gradient(135deg, ${currentSettings.color_palette.accent_color}40 0%, ${currentSettings.color_palette.secondary_color}20 100%)` :
+              'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             minHeight: '100vh',
             py: 8
           }}
@@ -446,28 +393,34 @@ function AuthPage() {
         <Paper elevation={0} sx={{ 
             p: { xs: 2, sm: 4 }, 
             width: { xs: '90%', sm: 450 }, 
-            backgroundColor: pinkTheme.palette.background.paper, // Fondo blanco/claro
+            backgroundColor: '#ffffff', // Fondo blanco para el formulario
             borderRadius: 3, // Bordes más redondeados
+            boxShadow: currentSettings?.color_palette ? 
+              `0 8px 32px ${currentSettings.color_palette.primary_color}20` :
+              '0 8px 32px rgba(0,0,0,0.1)',
             border: '1px solid #e0e0e0'
             }}
         >
             <Tabs value={tabIndex} onChange={handleTabChange} centered 
                 sx={{ mb: 3, 
                       // Hacer los tabs completamente redondeados
-                      '& .MuiTabs-indicator': { backgroundColor: pinkTheme.palette.secondary.main },
+                      '& .MuiTabs-indicator': { display: 'none' }, // Ocultar el indicador por defecto
                       '& .MuiTab-root': { 
-                        color: pinkTheme.palette.text.secondary,
                         borderRadius: '25px',
                         margin: '0 4px',
-                        backgroundColor: tabIndex === 0 ? '#d4a5a5' : '#f5f5f5',
-                        color: tabIndex === 0 ? 'white' : '#666',
+                        backgroundColor: '#f5f5f5', // Color inactivo por defecto
+                        color: currentSettings?.color_palette?.text_color || '#666',
+                        fontWeight: 'bold',
                         '&:hover': {
-                          backgroundColor: tabIndex === 0 ? '#e8c4c4' : '#eeeeee',
+                          backgroundColor: '#eeeeee',
                         }
                       },
                       '& .Mui-selected': { 
                         color: 'white !important',
-                        backgroundColor: '#e8c4c4'
+                        backgroundColor: `${currentSettings?.color_palette?.primary_color || '#d4a5a5'} !important`,
+                        '&:hover': {
+                          backgroundColor: `${currentSettings?.color_palette?.accent_color || '#e8c4c4'} !important`,
+                        }
                       }
                 }}>
                 <Tab label="INICIAR SESIÓN" />
@@ -488,7 +441,11 @@ function AuthPage() {
 
             {tabIndex === 0 && ( // Formulario de Login
             <Box component="form" onSubmit={handleLogin} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ textAlign: 'center', color: 'text.primary', fontWeight: 'bold' }}>
+                <Typography variant="h5" component="h2" gutterBottom sx={{ 
+                  textAlign: 'center', 
+                  color: currentSettings?.color_palette?.text_color || '#333333', 
+                  fontWeight: 'bold' 
+                }}>
                 Iniciar Sesión
                 </Typography>
                 
@@ -502,6 +459,24 @@ function AuthPage() {
                   disabled={loading}
                   error={emailError}
                   helperText={emailError ? 'Por favor, ingresa un correo electrónico válido' : ''}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      backgroundColor: '#f8f9fa',
+                      '& fieldset': {
+                        borderColor: '#e0e0e0',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: currentSettings?.color_palette?.accent_color || '#d4a5a5',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                      },
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                    },
+                  }}
                 />
                 
                 <TextField
@@ -519,9 +494,19 @@ function AuthPage() {
                 <Button
                 type="submit"
                 variant="contained"
-                color="secondary"
                 size="large"
-                sx={{ mt: 2, borderRadius: 8 }}
+                sx={{ 
+                  mt: 2, 
+                  borderRadius: 8,
+                  backgroundColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                  },
+                  '&:disabled': {
+                    backgroundColor: '#cccccc',
+                  }
+                }}
                 disabled={loading}
                 >
                 INICIAR SESIÓN
@@ -544,7 +529,14 @@ function AuthPage() {
                 
                 <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
                 ¿No tienes una cuenta?{' '}
-                <Button onClick={() => setTabIndex(1)} sx={{ textTransform: 'none', color: 'secondary.main', fontWeight: 'bold' }}>
+                <Button onClick={() => setTabIndex(1)} sx={{ 
+                  textTransform: 'none', 
+                  color: currentSettings?.color_palette?.primary_color || '#d4a5a5', 
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    color: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                  }
+                }}>
                     Regístrate aquí
                 </Button>
                 </Typography>
@@ -608,9 +600,19 @@ function AuthPage() {
                 <Button
                 type="submit"
                 variant="contained"
-                color="secondary"
                 size="large"
-                sx={{ mt: 2, borderRadius: 8 }}
+                sx={{ 
+                  mt: 2, 
+                  borderRadius: 8,
+                  backgroundColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                  },
+                  '&:disabled': {
+                    backgroundColor: '#cccccc',
+                  }
+                }}
                 disabled={loading}
                 >
                 REGISTRARSE
@@ -618,15 +620,21 @@ function AuthPage() {
                 
                 <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
                 ¿Ya tienes una cuenta?{' '}
-                <Button onClick={() => setTabIndex(0)} sx={{ textTransform: 'none', color: 'secondary.main', fontWeight: 'bold' }}>
+                <Button onClick={() => setTabIndex(0)} sx={{ 
+                  textTransform: 'none', 
+                  color: currentSettings?.color_palette?.primary_color || '#d4a5a5', 
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    color: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                  }
+                }}>
                     Inicia sesión aquí
                 </Button>
                 </Typography>
             </Box>
             )}
         </Paper>
-        </Box>
-
+        
         {/* Snackbar para mostrar mensajes de éxito o error */}
         <Snackbar
         open={snackbarOpen}
@@ -638,7 +646,7 @@ function AuthPage() {
             {successMessage || error}
         </Alert>
         </Snackbar>
-    </ThemeProvider>
+        </Box>
   );
 }
 

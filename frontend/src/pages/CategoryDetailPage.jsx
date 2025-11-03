@@ -7,6 +7,7 @@ import { useSearch } from '../context/SearchContext.jsx';
 
 import { useCart } from '../context/CartContext.jsx'; // importamos el contexto del carrito
 import SearchBar from '../components/SearchBar.jsx';
+import MobileFilters from '../components/MobileFilters.jsx';
 
 /**
  * Página que muestra los productos de una categoría específica.
@@ -31,6 +32,14 @@ function CategoryDetailPage() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
+  // Handler para seleccionar categoría desde filtros móviles
+  const handleSelectCategory = (categoryId) => {
+    if (!categoryId) {
+      navigate('/products');
+    } else {
+      navigate(`/category/${categoryId}`);
+    }
+  };
 
   useEffect(() => {
     const fetchCategoryAndProducts = async () => {
@@ -142,8 +151,13 @@ function CategoryDetailPage() {
       <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center', mb: 4, color: 'secondary.main' }}>
         Productos de {categoryName}
       </Typography>
-      <Box sx={{ mt: 2, mb: 3 }}>
+      {/* Filtros en desktop/tablet */}
+      <Box sx={{ mt: 2, mb: 3, display: { xs: 'none', sm: 'block' } }}>
         <SearchBar />
+      </Box>
+      {/* Filtros compactos para móviles */}
+      <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
+        <MobileFilters selectedCategoryId={id} onSelectCategory={handleSelectCategory} />
       </Box>
 
       {products.length === 0 ? (
@@ -154,10 +168,10 @@ function CategoryDetailPage() {
         <Box
           sx={{
             display: 'flex',
-            flexWrap: 'wrap', // Permite que los elementos se envuelvan a la siguiente línea
-            gap: 4, // Espacio entre las tarjetas
-            justifyContent: 'center', // Centra las tarjetas horizontalmente
-            alignItems: 'stretch', // Asegura que las tarjetas se estiren a la misma altura
+            flexWrap: 'wrap',
+            gap: 4,
+            justifyContent: 'center',
+            alignItems: 'stretch',
           }}
         >
           {products.map((product) => {
@@ -165,14 +179,13 @@ function CategoryDetailPage() {
               <Card
                 key={product.id}
                 sx={{
-                  // Define el ancho de cada tarjeta para responsive
                   flexBasis: {
-                    xs: '100%', // 1 columna en pantallas extra-pequeñas
-                    sm: 'calc(50% - 16px)', // 2 columnas en pantallas pequeñas (50% - gap/2*2 = 50% - gap)
-                    md: 'calc(33.333% - 21.333px)', // 3 columnas en pantallas medianas (33.333% - gap/3*2 = 33.333% - gap * 2/3)
-                    lg: 'calc(25% - 24px)', // 4 columnas en pantallas grandes (25% - gap/4*3 = 25% - gap * 3/4)
+                    xs: '100%',
+                    sm: 'calc(50% - 16px)',
+                    md: 'calc(33.333% - 21.333px)',
+                    lg: 'calc(25% - 24px)',
                   },
-                  maxWidth: { // Evita que crezcan demasiado si hay pocos items
+                  maxWidth: {
                     xs: '100%',
                     sm: 'calc(50% - 16px)',
                     md: 'calc(33.333% - 21.333px)',
@@ -181,7 +194,7 @@ function CategoryDetailPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: 'background.paper',
-                  height: '520px', // Altura fija para toda la Card
+                  height: { xs: 'auto', md: 520 },
                   borderRadius: 2,
                   justifyContent: 'space-between',
                   position: 'relative',
@@ -203,15 +216,15 @@ function CategoryDetailPage() {
                   )}
                   <CardMedia
                     component="img"
+                    image={product.imagenPath || 'https://placehold.co/400x200/4a4a4a/f0f0f0?text=No+Image'}
+                    alt={product.name}
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x200/4a4a4a/f0f0f0?text=Imagen+no+disponible'; }}
                     sx={{
-                      height: '200px', // Altura fija para las imágenes
+                      height: { xs: 160, md: 200 },
                       objectFit: 'contain',
                       p: 2,
                       backgroundColor: 'background.default'
                     }}
-                    image={product.imagenPath || "https://placehold.co/400x200/4a4a4a/f0f0f0?text=No+Image"}
-                    alt={product.name}
-                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x200/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
                   />
                   <CardContent sx={{
                     flexGrow: 1,

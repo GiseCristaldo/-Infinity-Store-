@@ -1,13 +1,15 @@
 // src/components/ImageCarousel.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import { useTheme } from '@mui/material/styles';
+import { useTheme as useCustomTheme } from '../context/ThemeContext.jsx';
+import axios from 'axios';
 
 const carouselItemSx = {
   display: 'flex',
@@ -45,14 +47,20 @@ const contentSx = {
  */
 function ImageCarousel() {
   const theme = useTheme();
-  const slides = [
+  const { currentSettings, triggerRefresh } = useCustomTheme();
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Slides por defecto como fallback
+  const defaultSlides = [
     {
       id: 1,
       image: 'https://i.pinimg.com/736x/70/f3/6a/70f36a427e02f26b3333cefdbefaf16c.jpg',
       title: '¡Nuevas Figuras de Colección!',
       description: 'Descubre las últimas adiciones a tu colección favorita con descuentos exclusivos.',
       buttonText: 'Ver Figuras de Colección',
-      link: '/products?categoryId=6' // Ejemplo de link a una categoría específica
+      link: '/products?categoryId=6'
     },
     {
       id: 2,
@@ -60,7 +68,7 @@ function ImageCarousel() {
       title: 'Cómics y Mangas con 20% OFF',
       description: 'Sumérgete en nuevas historias con nuestra selección de cómics y mangas a precios increíbles.',
       buttonText: 'Explorar Cómics',
-      link: '/products?categoryId=3' // Ejemplo de link a otra categoría
+      link: '/products?categoryId=3'
     },
     {
       id: 3,
@@ -68,9 +76,91 @@ function ImageCarousel() {
       title: 'Ediciones Limitadas de cartas',
       description: 'No te pierdas las ediciones más raras de tus juegos preferidos. ¡Stock limitado!',
       buttonText: 'Ver Juegos y Coleccionables',
-      link: '/products?categoryId=5' // Ejemplo de link a todos los productos products?category=5
+      link: '/products?categoryId=5'
     },
   ];
+
+  useEffect(() => {
+    loadCarouselImages();
+  }, [currentSettings]); // Se actualiza cuando cambian las configuraciones
+
+  const loadCarouselImages = async () => {
+    try {
+      setLoading(true);
+      
+      // Usar imágenes del ThemeContext si están disponibles
+      let carouselImages = currentSettings?.carousel_images || [];
+      
+      // Si no hay imágenes en el contexto, cargar desde la API
+      if (carouselImages.length === 0) {
+        const response = await axios.get('/api/settings/current');
+        carouselImages = response.data.data?.carousel_images || [];
+      }
+      
+      if (carouselImages.length > 0) {
+        // Convertir las imágenes de la API en slides
+        const dynamicSlides = carouselImages.map((imageData, index) => {
+          // Manejar tanto el formato antiguo (string) como el nuevo (objeto)
+          const imageUrl = typeof imageData === 'string' ? imageData : imageData.image;
+          const imageText = typeof imageData === 'object' && imageData.text ? imageData.text : `Slide ${index + 1}`;
+          
+          return {
+            id: index + 1,
+            image: imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageUrl}`,
+            title: imageText,
+            description: 'Descubre nuestros productos destacados',
+            buttonText: 'Ver Productos',
+            link: '/products'
+          };
+        });
+        setSlides(dynamicSlides);
+      } else {
+        // Usar slides por defecto si no hay imágenes personalizadas
+        setSlides(defaultSlides);
+      }
+    } catch (error) {
+      console.error('Error loading carousel images:', error);
+      setError(error);
+      // Usar slides por defecto en caso de error
+      setSlides(defaultSlides);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ 
+        width: '100vw', 
+        mx: 'calc(-50vw + 50%)', 
+        height: { xs: 200, sm: 300, md: 400 },
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'grey.100'
+      }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (slides.length === 0) {
+    return (
+      <Box sx={{ 
+        width: '100vw', 
+        mx: 'calc(-50vw + 50%)', 
+        height: { xs: 200, sm: 300, md: 400 },
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'grey.100'
+      }}>
+        <Typography variant="h6" color="text.secondary">
+          No hay imágenes de carousel configuradas
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100vw', mx: 'calc(-50vw + 50%)', overflow: 'hidden' }}>

@@ -12,7 +12,9 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import axios from 'axios';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useTheme } from '../context/ThemeContext.jsx';
 import CategoryFilter from '../components/CategoryFilter.jsx';
+import MobileFilters from '../components/MobileFilters.jsx';
 import { formatPrice, isValidPrice } from '../utils/priceUtils.js';
 import { COLORS, BUTTON_STYLES, CARD_STYLES } from '../utils/colorConstants.js';
 
@@ -43,6 +45,9 @@ function ProductDetailPage() {
 
   const { addToCart, cartItems } = useCart();
   const { isAuthenticated } = useAuth();
+  
+  // Use dynamic theme
+  const { currentSettings } = useTheme();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -164,14 +169,24 @@ function ProductDetailPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Chips de Categorías en la parte superior */}
-      <Box sx={{ mb: 4 }}>
+    <Container maxWidth="lg" sx={{ 
+      py: 4,
+      minHeight: '100vh',
+      background: currentSettings?.color_palette ? 
+        `linear-gradient(135deg, ${currentSettings.color_palette.accent_color}10 0%, ${currentSettings.color_palette.secondary_color}05 100%)` :
+        'transparent'
+    }}>
+      {/* Filtros desktop/tablet */}
+      <Box sx={{ mb: 4, display: { xs: 'none', sm: 'block' } }}>
         <CategoryFilter
           onSelectCategory={handleSelectCategory}
           selectedCategoryId={selectedCategoryId}
           onCategoryChange={setSelectedCategoryId}
         />
+      </Box>
+      {/* Filtros móviles */}
+      <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
+        <MobileFilters selectedCategoryId={selectedCategoryId} onSelectCategory={handleSelectCategory} />
       </Box>
 
       <Grid container spacing={4} sx={{ 
@@ -192,12 +207,23 @@ function ProductDetailPage() {
                 alignItems: 'center',
                 height: { xs: '350px', md: '500px', lg: '600px' },
                 width: '100%',
-                backgroundColor: COLORS.background.paper,
+                backgroundColor: '#ffffff',
                 borderRadius: 2,
                 overflow: 'hidden',
                 position: 'relative',
-                ...CARD_STYLES.base,
-                ...CARD_STYLES.hover,
+                border: currentSettings?.color_palette ? 
+                  `2px solid ${currentSettings.color_palette.accent_color}40` :
+                  '1px solid #e0e0e0',
+                boxShadow: currentSettings?.color_palette ? 
+                  `0 8px 24px ${currentSettings.color_palette.primary_color}15` :
+                  '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: currentSettings?.color_palette ? 
+                    `0 12px 32px ${currentSettings.color_palette.primary_color}25` :
+                    '0 8px 20px rgba(0,0,0,0.15)',
+                }
               }}
             >
               {product.ofert && (
@@ -364,7 +390,7 @@ function ProductDetailPage() {
           }}>
             {/* Título del producto */}
             <Typography variant="h4" component="h1" gutterBottom sx={{ 
-              color: COLORS.text.primary, 
+              color: currentSettings?.color_palette?.text_color || '#333333', 
               fontWeight: 700,
               mb: 3,
               textAlign: 'left',
@@ -375,11 +401,16 @@ function ProductDetailPage() {
             
             {/* Categoría */}
             <Box sx={{ 
-              backgroundColor: COLORS.background.overlay,
+              backgroundColor: currentSettings?.color_palette ? 
+                `${currentSettings.color_palette.accent_color}20` :
+                'rgba(0,0,0,0.05)',
               borderRadius: 2,
               p: 1.5,
               mb: 2,
               textAlign: 'center',
+              border: currentSettings?.color_palette ? 
+                `1px solid ${currentSettings.color_palette.accent_color}40` :
+                '1px solid #e0e0e0',
             }}>
               <Typography
                 variant="body1"
@@ -395,7 +426,9 @@ function ProductDetailPage() {
             
             {/* Descripción - NO CAMBIA DE POSICIÓN */}
             <Box sx={{ 
-              backgroundColor: COLORS.background.overlay,
+              backgroundColor: currentSettings?.color_palette ? 
+                `${currentSettings.color_palette.accent_color}15` :
+                'rgba(0,0,0,0.05)',
               borderRadius: 2,
               p: 2,
               mb: 3,
@@ -403,12 +436,16 @@ function ProductDetailPage() {
               minHeight: '120px', // Altura mínima para consistencia
               display: 'flex',
               alignItems: 'flex-start', // Alinea el texto al inicio
+              border: currentSettings?.color_palette ? 
+                `1px solid ${currentSettings.color_palette.accent_color}30` :
+                '1px solid #e0e0e0',
             }}>
-              <Typography variant="body1" color={COLORS.text.light} sx={{ 
+              <Typography variant="body1" sx={{ 
                 lineHeight: 1.6,
                 fontSize: '1.1rem',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                color: currentSettings?.color_palette?.text_color || '#666666',
               }}>
                 {product.description}
               </Typography>
@@ -433,7 +470,11 @@ function ProductDetailPage() {
 
             {/* Precio: soporta número (formateado) o string ya formateado desde backend */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h4" sx={{ color: COLORS.primary.main, fontWeight: 'bold', mb: 1 }}>
+              <Typography variant="h4" sx={{ 
+                color: currentSettings?.color_palette?.primary_color || '#d4a5a5', 
+                fontWeight: 'bold', 
+                mb: 1 
+              }}>
                 {typeof product.price === 'number' ? formatPrice(product.price) : (product.price || formatPrice(0))}
               </Typography>
             </Box>
@@ -449,7 +490,18 @@ function ProductDetailPage() {
                   mb: 2,
                   py: 1.5,
                   fontSize: '1.1rem',
-                  ...BUTTON_STYLES.primary,
+                  fontWeight: 'bold',
+                  backgroundColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                  color: '#ffffff',
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                    transform: 'translateY(-2px)',
+                    boxShadow: currentSettings?.color_palette ? 
+                      `0 6px 16px ${currentSettings.color_palette.primary_color}40` :
+                      '0 6px 16px rgba(0,0,0,0.2)',
+                  },
                   '&:disabled': {
                     backgroundColor: '#ccc',
                     color: '#999',
@@ -466,7 +518,19 @@ function ProductDetailPage() {
                 to="/products"
                 sx={{
                   py: 1.5,
-                  ...BUTTON_STYLES.outlined,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  borderColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                  color: currentSettings?.color_palette?.primary_color || '#d4a5a5',
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    borderColor: currentSettings?.color_palette?.secondary_color || '#c9a9a9',
+                    backgroundColor: currentSettings?.color_palette ? 
+                      `${currentSettings.color_palette.accent_color}20` :
+                      'rgba(212, 165, 165, 0.1)',
+                    transform: 'translateY(-1px)',
+                  },
                 }}
               >
                 Volver al Catálogo
