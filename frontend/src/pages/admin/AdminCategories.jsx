@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, Paper, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, CircularProgress, Alert,
-  IconButton, Snackbar
+  IconButton, Snackbar, Avatar
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -43,115 +43,121 @@ function AdminCategories() {
 
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
-  // --- Manejadores para el formulario ---
-  const handleOpenForm = (category = null) => {
+  const handleOpenModal = (category = null) => {
     setCurrentCategory(category);
     setIsModalOpen(true);
   };
-  const handleCloseForm = () => {
+
+  const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentCategory(null);
   };
-  const handleSubmitForm = async (formData) => {
+
+  const handleSubmit = async (formData) => {
     try {
-      let message = '';
-      if (currentCategory) {
+      if (currentCategory && currentCategory.id) {
         await updateCategory(currentCategory.id, formData);
-        message = '¡Categoría actualizada exitosamente!';
+        setSnackbar({ open: true, message: 'Categoría actualizada correctamente', severity: 'success' });
       } else {
         await createCategory(formData);
-        message = '¡Categoría creada exitosamente!';
+        setSnackbar({ open: true, message: 'Categoría creada correctamente', severity: 'success' });
       }
-      handleCloseForm();
-      setSnackbar({ open: true, message, severity: 'success' });
+      handleCloseModal();
       fetchCategories();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Ocurrió un error.';
-      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
+      setSnackbar({ open: true, message: err.message || 'Error al guardar la categoría', severity: 'error' });
     }
   };
 
-  // --- Manejadores para eliminación ---
-  const handleOpenConfirm = (category) => {
-    setCurrentCategory(category);
+  const handleDelete = async (category) => {
     setIsConfirmOpen(true);
+    setCurrentCategory(category);
   };
-  const handleCloseConfirm = () => {
-    setIsConfirmOpen(false);
-    setCurrentCategory(null);
-  };
-  const handleConfirmDelete = async () => {
-    if (!currentCategory) return;
+
+  const confirmDelete = async () => {
     try {
       await deleteCategory(currentCategory.id);
-      handleCloseConfirm();
-      setSnackbar({ open: true, message: 'Categoría eliminada exitosamente.', severity: 'success' });
+      setSnackbar({ open: true, message: 'Categoría eliminada correctamente', severity: 'success' });
+      setIsConfirmOpen(false);
+      setCurrentCategory(null);
       fetchCategories();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Error al eliminar la categoría.';
-      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
+      setSnackbar({ open: true, message: err.message || 'Error al eliminar la categoría', severity: 'error' });
     }
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-  if (error) return <Alert severity="error">{error}</Alert>;
-
   return (
-    <Paper sx={{ p: 2, width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Gestión de Categorías</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenForm()}>
-          Añadir Categoría
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h5">Administrar Categorías</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
+          Nueva Categoría
         </Button>
       </Box>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {categories.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell>{category.name}</TableCell>
-                <TableCell align="right">
-                  <IconButton color="primary" onClick={() => handleOpenForm(category)}><EditIcon /></IconButton>
-                  <IconButton color="error" onClick={() => handleOpenConfirm(category)}><DeleteIcon /></IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
 
-      <Modal
-        open={isModalOpen}
-        onClose={handleCloseForm}
-        title={currentCategory ? 'Editar Categoría' : 'Añadir Nueva Categoría'}
-      >
-        <CategoryForm
-          onSubmit={handleSubmitForm}
-          initialData={currentCategory || {}}
-        />
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <TableContainer component={Paper} sx={{ maxWidth: '100%', overflowX: 'auto' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Imagen</TableCell>
+                <TableCell>Nombre</TableCell>
+                <TableCell align="right">Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.map((cat) => (
+                <TableRow key={cat.id}>
+                  <TableCell>
+                    {cat.imagenURL ? (
+                      <Avatar variant="rounded" src={cat.imagenURL} alt={cat.name} sx={{ width: 56, height: 56 }} />
+                    ) : (
+                      <Avatar variant="rounded" sx={{ width: 56, height: 56 }}>?</Avatar>
+                    )}
+                  </TableCell>
+                  <TableCell>{cat.name}</TableCell>
+                  <TableCell align="right">
+                    <IconButton color="primary" onClick={() => handleOpenModal(cat)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(cat)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* Modal para crear/editar */}
+      <Modal open={isModalOpen} onClose={handleCloseModal} title={currentCategory ? 'Editar Categoría' : 'Nueva Categoría'}>
+        <CategoryForm initialData={currentCategory || {}} onSubmit={handleSubmit} />
       </Modal>
 
+      {/* Confirmación de eliminación */}
       <ConfirmDialog
         open={isConfirmOpen}
-        onCancel={handleCloseConfirm}
-        onConfirm={handleConfirmDelete}
-        title="Confirmar Eliminación"
-      >
-        ¿Estás seguro de que quieres eliminar la categoría "{currentCategory?.name}"?
-      </ConfirmDialog>
+        title="Eliminar categoría"
+        content={`¿Seguro que deseas eliminar la categoría "${currentCategory?.name}"?`}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+      />
 
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Paper>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbar.message}
+      />
+    </Box>
   );
 }
 

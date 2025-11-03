@@ -110,15 +110,15 @@ function AdminProducts() {
           Añadir Producto
         </Button>
       </Box>
-      <TableContainer>
+      <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Imagen</TableCell>
               <TableCell>Nombre</TableCell>
-              <TableCell>Precio</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Categoría</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Precio</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Stock</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Categoría</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -129,9 +129,9 @@ function AdminProducts() {
                   <Avatar src={product.imagenPath} alt={product.name} variant="square" />
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
-                <TableCell>${product.price}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>{product.category?.name || 'N/A'}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>${product.price}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{product.stock}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{product.category?.name || 'N/A'}</TableCell>
                 <TableCell align="right">
                   <IconButton color="primary" onClick={() => handleOpenForm(product)}><EditIcon /></IconButton>
                   <IconButton color="error" onClick={() => handleOpenConfirm(product)}><DeleteIcon /></IconButton>

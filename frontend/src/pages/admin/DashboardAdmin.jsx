@@ -4,8 +4,7 @@ import {
   AppBar, Box, Drawer, List, ListItem, ListItemButton, ListItemIcon,
   ListItemText, Toolbar, Typography, Tooltip, IconButton
 } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles'; // Importar para el tema
-import { ADMIN_COLORS } from '../../utils/colorConstants.js';
+
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import CategoryIcon from '@mui/icons-material/Category';
@@ -17,47 +16,6 @@ import AdminProducts from './AdminProducts';
 import AdminCategories from './AdminCategories';
 
 const drawerWidth = 240;
-
-// --- 1. DEFINIR EL TEMA PERSONALIZADO ---
-const adminTheme = createTheme({
-  palette: {
-    primary: {
-      main: ADMIN_COLORS.primary.main,
-    },
-    background: {
-      default: ADMIN_COLORS.background.default || ADMIN_COLORS.background.paper,
-    },
-    text: {
-      primary: ADMIN_COLORS.text.light,
-      secondary: ADMIN_COLORS.text.secondary,
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h5: {
-      fontWeight: 600, // Títulos de página más gruesos
-      fontSize: '1.5rem',
-    },
-    // Estilo para los encabezados de tabla
-    tableHeader: {
-      fontWeight: 'bold',
-      fontSize: '0.875rem',
-      color: '#212121',
-    },
-  },
-  components: {
-    // Estilo global para los encabezados de tabla
-    MuiTableCell: {
-      styleOverrides: {
-        head: {
-          backgroundColor: ADMIN_COLORS.background.overlay,
-          fontWeight: 700,
-          color: ADMIN_COLORS.text.light,
-        },
-      },
-    },
-  },
-});
 
 function AdminDashboard() {
   const location = useLocation();
@@ -76,8 +34,7 @@ function AdminDashboard() {
   ];
 
   return (
-    // --- 2. APLICAR EL TEMA CON THEMEPROVIDER ---
-    <ThemeProvider theme={adminTheme}>
+
       <Box sx={{ display: 'flex', bgcolor: 'background.default' }}>
         <AppBar
           position="fixed"
@@ -144,7 +101,6 @@ function AdminDashboard() {
           </Routes>
         </Box>
       </Box>
-    </ThemeProvider>
   );
 }
 

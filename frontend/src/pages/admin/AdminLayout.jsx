@@ -1,50 +1,19 @@
-import React, { useEffect } from 'react';
+// imports y configuración del tema de administración
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar, Box, Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Typography, Tooltip, IconButton
+  ListItemText, Toolbar, Typography, Tooltip, IconButton, useMediaQuery
 } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles'; // Importar createTheme
-import { ADMIN_COLORS } from '../../utils/colorConstants.js';
+import MenuIcon from '@mui/icons-material/Menu';
 
-// --- Iconos ---
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import CategoryIcon from '@mui/icons-material/Category';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../context/AuthContext';
-
-// --- TEMA ESPECÍFICO PARA EL PANEL DE ADMINISTRACIÓN ---
-// Definimos el tema aquí para mantenerlo separado del tema principal de la tienda.
-const adminTheme = createTheme({
-  palette: {
-    primary: {
-      main: ADMIN_COLORS.primary.main,
-    },
-    background: {
-      default: ADMIN_COLORS.background.default || ADMIN_COLORS.background.paper,
-    },
-    text: {
-      primary: ADMIN_COLORS.text.light,
-      secondary: ADMIN_COLORS.text.secondary,
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h5: { fontWeight: 600, fontSize: '1.5rem' },
-  },
-  components: {
-    MuiTableCell: {
-      styleOverrides: {
-        head: {
-          backgroundColor: ADMIN_COLORS.background.overlay,
-          fontWeight: 700,
-          color: ADMIN_COLORS.text.light,
-        },
-      },
-    },
-  },
-});
 
 const drawerWidth = 240;
 
@@ -52,8 +21,8 @@ const menuItems = [
   { text: 'Dashboard', path: '/admin', icon: <DashboardIcon />, tooltip: 'Ver el inicio del dashboard' },
   { text: 'Usuarios', path: '/admin/users', icon: <PeopleIcon />, tooltip: 'Gestionar usuarios' },
   { text: 'Categorías', path: '/admin/categories', icon: <CategoryIcon />, tooltip: 'Gestionar categorías' },
-  { text: 'Órdenes', path: '/admin/orders', icon: <CategoryIcon />, tooltip: 'Gestionar órdenes' },
-  { text: 'Productos', path: '/admin/products', icon: <CategoryIcon />, tooltip: 'Gestionar productos' }  // Nuevo ítem para productos
+  { text: 'Órdenes', path: '/admin/orders', icon: <ShoppingCartIcon />, tooltip: 'Gestionar órdenes' },
+  { text: 'Productos', path: '/admin/products', icon: <InventoryIcon />, tooltip: 'Gestionar productos' }
 ];
 
 function AdminLayout() {
@@ -61,81 +30,158 @@ function AdminLayout() {
     const navigate = useNavigate(); 
     const { logout } = useAuth();  
 
-useEffect(() => {
-  console.log("Estado de auth en AdminLayout:", { 
-    logout: !!logout, // Verificar si la función existe
-    // También podrías imprimir isAuthenticated y user para más contexto
-  });
-}, [logout]);
+    const isSmallScreen = useMediaQuery('(max-width:900px)');
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(true);
 
-  const handleLogout = async () => {
-    try {
-      console.log("Cerrando sesión...");
-      
-      // Ejecutar logout del contexto
-      if (logout) {
-        await logout();
+    useEffect(() => {
+      console.log("Estado de auth en AdminLayout:", { 
+        logout: !!logout,
+      });
+    }, [logout]);
+
+    const handleLogout = async () => {
+      try {
+        if (logout) await logout();
+        navigate('/auth');
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
       }
-      
-      // Navegación a la página de autenticación
-      navigate('/auth');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  };
+    };
 
-  return (
-    <ThemeProvider theme={adminTheme}>
-      <Box sx={{ display: 'flex', bgcolor: 'background.default' }}>
-        <AppBar
-          position="fixed"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: 'primary.main' }}
-          elevation={1}
-        >
-          <Toolbar>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              Admin Panel
-            </Typography>
-            <Tooltip title="Cerrar Sesión">
-              <IconButton color="inherit" onClick={handleLogout}>
-                <LogoutIcon />
-              </IconButton>
-            </Tooltip>
-          </Toolbar>
-        </AppBar>
-        
-        <Drawer
-          variant="permanent"
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', backgroundColor: 'primary.main', color: 'white' },
-          }}
-        >
-          <Toolbar />
-          <Box sx={{ overflow: 'auto' }}>
-            <List>
-              {menuItems.map((item) => (
-                <Tooltip title={item.tooltip} placement="right" key={item.text}>
-                  <ListItem disablePadding>
-                    <ListItemButton component={Link} to={item.path} selected={location.pathname === item.path} sx={{ '&.Mui-selected': { backgroundColor: 'rgba(255, 255, 255, 0.16)' }, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' } }}>
-                      <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
-                      <ListItemText primary={item.text} />
-                    </ListItemButton>
-                  </ListItem>
-                </Tooltip>
-              ))}
-            </List>
-          </Box>
-        </Drawer>
-
-        <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh' }}>
-          <Toolbar />
-          <Outlet />
+    const drawerContent = (
+      <>
+        <Toolbar />
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {menuItems.map((item) => (
+              <Tooltip title={item.tooltip} placement="right" key={item.text}>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    to={item.path}
+                    selected={location.pathname === item.path}
+                    sx={{
+                      '&.Mui-selected': { backgroundColor: 'primary.light' },
+                      '&:hover': { backgroundColor: 'primary.light' },
+                    }}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <ListItemIcon sx={{ color: 'text.primary' }}>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItemButton>
+                </ListItem>
+              </Tooltip>
+            ))}
+          </List>
         </Box>
-      </Box>
-    </ThemeProvider>
-  );
+      </>
+    );
+
+    return (
+
+        <Box sx={{ display: 'flex', bgcolor: 'background.default' }}>
+          <AppBar
+            position="fixed"
+            sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: 'primary.main', color: 'primary.contrastText' }}
+            elevation={1}
+          >
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={() => (isSmallScreen ? setMobileOpen(true) : setDrawerOpen((prev) => !prev))}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                Admin Panel
+              </Typography>
+              <Tooltip title="Cerrar Sesión">
+                <IconButton color="inherit" onClick={handleLogout}>
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            </Toolbar>
+          </AppBar>
+          {/* Drawer responsive */}
+          {isSmallScreen ? (
+            <Drawer
+              variant="temporary"
+              open={mobileOpen}
+              onClose={() => setMobileOpen(false)}
+              ModalProps={{ keepMounted: true }}
+              sx={{
+                [`& .MuiDrawer-paper`]: {
+                  width: drawerWidth,
+                  boxSizing: 'border-box',
+                  backgroundColor: 'background.paper',
+                  color: 'text.primary',
+                },
+              }}
+            >
+              {drawerContent}
+            </Drawer>
+          ) : (
+            <Drawer
+              variant="permanent"
+              open={drawerOpen}
+              sx={{
+                width: drawerOpen ? drawerWidth : 72,
+                flexShrink: 0,
+                transition: 'width 200ms ease',
+                [`& .MuiDrawer-paper`]: {
+                  width: drawerOpen ? drawerWidth : 72,
+                  boxSizing: 'border-box',
+                  overflowX: 'hidden',
+                  backgroundColor: 'background.paper',
+                  color: 'text.primary',
+                  transition: 'width 200ms ease',
+                },
+              }}
+            >
+              {/* Adaptar contenido a modo colapsado */}
+              <Toolbar />
+              <Box sx={{ overflow: 'auto' }}>
+                <List>
+                  {menuItems.map((item) => (
+                    <Tooltip title={item.tooltip} placement="right" key={item.text}>
+                      <ListItem disablePadding>
+                        <ListItemButton
+                          component={Link}
+                          to={item.path}
+                          selected={location.pathname === item.path}
+                          sx={{
+                            '&.Mui-selected': { backgroundColor: 'primary.light' },
+                            '&:hover': { backgroundColor: 'primary.light' },
+                            px: 2,
+                          }}
+                        >
+                          <ListItemIcon sx={{ color: 'text.primary', minWidth: 40 }}>{item.icon}</ListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            sx={{
+                              opacity: drawerOpen ? 1 : 0,
+                              transition: 'opacity 150ms ease',
+                              whiteSpace: 'nowrap',
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    </Tooltip>
+                  ))}
+                </List>
+              </Box>
+            </Drawer>
+          )}
+
+          <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh' }}>
+            <Toolbar />
+            <Outlet />
+          </Box>
+        </Box>
+    );
 }
 
 export default AdminLayout;

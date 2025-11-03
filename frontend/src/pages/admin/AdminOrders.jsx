@@ -140,6 +140,20 @@ function AdminOrders() {
     }
   };
 
+  // Helpers: normalizar fecha, items y formato de dinero
+  const formatMoney = (value) => `$${Number(value ?? 0).toFixed(2)}`;
+  const getPurchaseDate = (order) => order?.date || order?.createdAt || order?.orderDate || null;
+  const resolveItems = (details) => {
+    const rawItems = details?.details || details?.items || details?.products || [];
+    return rawItems.map((item) => {
+      const quantity = item?.amount ?? item?.quantity ?? item?.qty ?? 0;
+      const price = item?.price ?? item?.product?.price ?? 0;
+      const name = item?.product?.name ?? item?.name ?? 'Producto no disponible';
+      const subtotal = item?.subtotal ?? quantity * price;
+      return { name, quantity, price, subtotal };
+    });
+  };
+
   if (loading && !isDetailsDialogOpen) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   }
@@ -150,16 +164,14 @@ function AdminOrders() {
 
   return (
     <Paper sx={{ p: 2, width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Gestión de Órdenes</Typography>
-      </Box>
-      <TableContainer>
+      {/* Tabla de órdenes */}
+      <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Cliente</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Total</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Fecha</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Total</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
@@ -168,8 +180,15 @@ function AdminOrders() {
             {orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>{order.user?.nombre || 'N/A'}</TableCell>
-                <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
-                <TableCell>${order.total}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                  {(() => {
+                    const d = getPurchaseDate(order);
+                    return d ? new Date(d).toLocaleDateString() : 'N/A';
+                  })()}
+                </TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                  {formatMoney(order.total)}
+                </TableCell>
                 <TableCell>
                   <Chip 
                     label={order.state} 
@@ -193,7 +212,7 @@ function AdminOrders() {
                   <IconButton 
                     color="error"
                     onClick={() => handleOpenConfirm(order)}
-                    disabled={order.state === 'entregado'} // No permitir borrar órdenes entregadas
+                    disabled={order.state === 'entregado'}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -255,7 +274,14 @@ function AdminOrders() {
               <Box sx={{ mb: 2 }}>
                 <Typography>Cliente: {orderDetails.user?.nombre}</Typography>
                 <Typography>Email: {orderDetails.user?.email}</Typography>
-                <Typography>Fecha: {new Date(orderDetails.createdAt).toLocaleString()}</Typography>
+                <Typography>
+                  Fecha de compra: {
+                    (() => {
+                      const d = getPurchaseDate(orderDetails);
+                      return d ? new Date(d).toLocaleString() : 'N/A';
+                    })()
+                  }
+                </Typography>
                 <Typography>Estado: 
                   <Chip 
                     label={orderDetails?.state} 
@@ -264,7 +290,9 @@ function AdminOrders() {
                     sx={{ ml: 1 }}
                   />
                 </Typography>
-                <Typography variant="h6" sx={{ mt: 2 }}>Total: ${orderDetails.total}</Typography>
+                <Typography variant="h6" sx={{ mt: 2 }}>
+                  Total: {formatMoney(orderDetails.total)}
+                </Typography>
               </Box>
               
               <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
@@ -281,12 +309,12 @@ function AdminOrders() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {orderDetails.details?.map((item, index) => (
+                    {resolveItems(orderDetails).map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.product?.name || 'Producto no disponible'}</TableCell>
+                        <TableCell>{item.name}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.price}</TableCell>
-                        <TableCell>${(item.quantity * item.price).toFixed(2)}</TableCell>
+                        <TableCell>{formatMoney(item.price)}</TableCell>
+                        <TableCell>{formatMoney(item.subtotal)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

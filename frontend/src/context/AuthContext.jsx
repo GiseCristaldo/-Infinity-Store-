@@ -137,6 +137,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Función para actualizar la información del usuario
+  const updateUser = useCallback((updatedUser) => {
+    if (updatedUser) {
+      setUser(updatedUser);
+      // Actualizar localStorage
+      try {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } catch (error) {
+        console.warn('Error al actualizar usuario en localStorage:', error);
+      }
+    }
+  }, []);
+
   // Proporcionar el estado y las funciones a los componentes hijos
   const contextValue = {
     user,
@@ -145,6 +158,7 @@ export const AuthProvider = ({ children }) => {
     login,
     googleLogin,
     logout,
+    updateUser,
   };
 
   // Renderizar los hijos del proveedor, pasando el valor del contexto

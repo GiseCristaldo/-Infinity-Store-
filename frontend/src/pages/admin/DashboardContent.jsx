@@ -301,14 +301,31 @@ function DashboardAdmin() {
         }}
         elevation={0}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 3, position: 'relative' }}>
+          {/* Fecha fija en la esquina superior derecha */}
+          <Typography 
+            variant="body2"
+            sx={{ 
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              color: ADMIN_COLORS.primary.dark
+            }}
+          >
+            {new Date().toLocaleDateString('es-ES', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </Typography>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12} sm={12}>
               <Typography 
                 variant="h4" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: ADMIN_COLORS.primary.contrastText,
+                  color: '#141414',
                   mb: 1,
                   textShadow: '0px 2px 4px rgba(0,0,0,0.2)'
                 }}
@@ -318,7 +335,7 @@ function DashboardAdmin() {
               <Typography 
                 variant="body1"
                 sx={{ 
-                  color: 'rgba(255,255,255,0.85)',
+                  color: ADMIN_COLORS.primary.dark,
                   maxWidth: '80%'
                 }}
               >
@@ -326,22 +343,7 @@ function DashboardAdmin() {
                 Aquí podrás gestionar todos los aspectos de tu tienda.
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={4} sx={{ textAlign: {xs: 'left', sm: 'right'} }}>
-              <Typography 
-                variant="body2"
-                sx={{ 
-                  color: 'rgba(255,255,255,0.7)',
-                  mb: 1
-                }}
-              >
-                {new Date().toLocaleDateString('es-ES', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </Typography>
-            </Grid>
+            {/* Se eliminó el Grid con la fecha duplicada */}
           </Grid>
         </CardContent>
       </Card>

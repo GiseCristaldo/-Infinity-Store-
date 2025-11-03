@@ -123,12 +123,12 @@ function AdminUsers() {
           Añadir Usuario
         </Button>
       </Box>
-      <TableContainer>
+      <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow> 
               <TableCell>Nombre</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</TableCell>
               <TableCell>Rol</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
@@ -137,7 +137,7 @@ function AdminUsers() {
             {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>{user.nombre}</TableCell>
-                <TableCell>{user.email}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{user.email}</TableCell>
                 <TableCell>
                   <Chip 
                     label={user.rol} 
@@ -155,7 +155,7 @@ function AdminUsers() {
                   <IconButton 
                     color="error"
                     onClick={() => handleOpenConfirm(user)}
-                    disabled={user.rol === 'admin'} // No permitir borrar admins
+                    disabled={user.rol === 'admin'}
                   >
                     <DeleteIcon />
                   </IconButton>

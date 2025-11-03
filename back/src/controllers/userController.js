@@ -275,14 +275,25 @@ export const getLoggedUser = async (req, res) => {
         const userId = req.user.id; 
 
         const user = await User.findByPk(userId, {
-            attributes: ['id', 'nombre', 'email', 'rol'],
+            attributes: { exclude: ['password'] } // Excluir solo la contraseña, incluir todos los demás campos
         });
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
         }
 
-        res.json({ user });
+        res.json({ 
+            user: {
+                id: user.id,
+                nombre: user.nombre,
+                email: user.email,
+                rol: user.rol,
+                avatar: user.avatar,
+                date_register: user.date_register,
+                is_active: user.is_active,
+                loginMethod: user.loginMethod
+            }
+        });
     } catch (error) {
         console.error('Error al obtener datos del usuario:', error);
         res.status(500).json({ message: 'Error interno del servidor.' });
