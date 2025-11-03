@@ -283,7 +283,7 @@ function CartPage() {
 
       <Grid container spacing={{ xs: 2, md: 4 }}>
         {/* Lista de productos */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={8}>
           <Box sx={{ 
             backgroundColor: '#ffffff',
             borderRadius: 3,
@@ -293,8 +293,8 @@ function CartPage() {
             boxShadow: currentSettings?.color_palette ? 
               `0 8px 24px ${currentSettings.color_palette.primary_color}15` :
               '0 4px 12px rgba(0,0,0,0.1)',
-            height: { xs: 'auto', md: '600px' },
-            maxHeight: { xs: '70vh', md: '600px' },
+            height: { xs: 'auto', lg: '600px' },
+            maxHeight: { xs: '70vh', lg: '600px' },
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -342,14 +342,14 @@ function CartPage() {
                     `0 4px 12px ${currentSettings.color_palette.primary_color}15` :
                     2
                 }}>
-                  {/* RESPONSIVE LAYOUT: Columna en móvil, fila en desktop */}
+                  {/* RESPONSIVE LAYOUT: Columna solo en pantallas muy pequeñas, fila en el resto */}
                   <Box sx={{ 
                     display: 'flex', 
                     flexDirection: { xs: 'column', sm: 'row' },
                     alignItems: { xs: 'stretch', sm: 'center' }, 
                     p: { xs: 1.5, sm: 2 }
                   }}>
-                    {/* IMAGEN RESPONSIVE: 100% width en móvil, 100px fijo en desktop */}
+                    {/* IMAGEN RESPONSIVE: 100% width solo en pantallas muy pequeñas */}
                     <CardMedia
                       component="img"
                       sx={{
@@ -438,7 +438,7 @@ function CartPage() {
                         </IconButton>
                       </Box>
                       
-                      {/* CONTROLES DE CANTIDAD: Centrados en móvil, alineados a la izquierda en desktop */}
+                      {/* CONTROLES DE CANTIDAD: Centrados solo en pantallas muy pequeñas */}
                       <Box sx={{ 
                         display: 'flex', 
                         alignItems: 'center', 
@@ -579,7 +579,7 @@ function CartPage() {
         </Grid>
 
         {/* Resumen y checkout */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} lg={4}>
           <Box sx={{ 
             p: { xs: 2, sm: 3 },
             backgroundColor: '#ffffff',
@@ -590,8 +590,8 @@ function CartPage() {
             boxShadow: currentSettings?.color_palette ? 
               `0 8px 24px ${currentSettings.color_palette.primary_color}15` :
               '0 4px 12px rgba(0,0,0,0.1)',
-            height: { xs: 'auto', md: '600px' },
-            minHeight: { xs: 'auto', md: '600px' },
+            height: { xs: 'auto', lg: '600px' },
+            minHeight: { xs: 'auto', lg: '600px' },
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -678,7 +678,7 @@ function CartPage() {
                   }}
                 />
 
-                {/* CAMPOS EMAIL/TELÉFONO: Apilados verticalmente en móvil */}
+                {/* CAMPOS EMAIL/TELÉFONO: Apilados solo en pantallas muy pequeñas */}
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: { xs: 'column', sm: 'row' },
