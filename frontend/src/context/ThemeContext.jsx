@@ -71,7 +71,8 @@ const createDynamicTheme = (settings) => {
         main: '#a5d4a5',
       },
       background: {
-        default: `linear-gradient(135deg, ${adjustBrightness(colors.accent, 30)}, ${adjustBrightness(colors.accent, 15)})`,
+        // Usar color sólido para evitar errores de parsing en componentes MUI
+        default: adjustBrightness(colors.accent, 15),
         paper: '#ffffff',
       },
       text: {
@@ -175,6 +176,17 @@ const createDynamicTheme = (settings) => {
           },
         },
       },
+      // Aplicar el gradiente global al body sin romper el palette
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            backgroundImage: `linear-gradient(135deg, ${adjustBrightness(colors.accent, 30)}, ${adjustBrightness(colors.accent, 15)})`,
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover'
+          }
+        }
+      },
       MuiCard: {
         styleOverrides: {
           root: {
@@ -193,8 +205,7 @@ const createDynamicTheme = (settings) => {
           root: {
             '& .MuiOutlinedInput-root': {
               borderRadius: 8,
-              backgroundColor: 'background.paper',
-              color: 'text.primary',
+              // Usar color del theme a través del callback si fuera necesario
               '& fieldset': { borderColor: colors.accent },
               '&:hover fieldset': { borderColor: colors.primary },
               '&.Mui-focused fieldset': { borderColor: colors.primary },
@@ -214,8 +225,9 @@ const createDynamicTheme = (settings) => {
       MuiDrawer: {
         styleOverrides: {
           paper: {
-            backgroundColor: 'background.paper',
-            color: 'text.primary',
+            // mantener colores sólidos para evitar problemas de parsing
+            backgroundColor: '#ffffff',
+            color: colors.text,
           },
         },
       },

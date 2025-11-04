@@ -25,6 +25,5 @@ router.put('/profile', verifyToken, handleAvatarUpload, updateProfile);
 // Rutas de administración de usuarios (solo admin)
 router.get('/admin', verifyToken, isAdmin, getAllUsers); 
 router.put('/admin/:id', verifyToken, isAdmin, updateUser); 
-router.delete('/admin/:id', verifyToken, isAdmin, deleteUser); 
 
 export default router;

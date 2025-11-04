@@ -86,12 +86,15 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((acc, item) => acc + item.quantity, 0);
   }, [cartItems]);
 
-  // Calcular el total monetario del carrito
+  // Calcular el total monetario del carrito (maneja strings con símbolos y separadores)
   const getCartTotal = useCallback(() => {
     return cartItems.reduce((acc, item) => {
-      const price = typeof item.price === 'number' ? item.price : parseFloat(item.price || 0);
+      const rawPrice = item.price;
+      const numericPrice = typeof rawPrice === 'number'
+        ? rawPrice
+        : parseFloat(String(rawPrice).replace(/[^0-9.-]+/g, '')) || 0;
       const quantity = typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity || 0);
-      return acc + (price * quantity);
+      return acc + (numericPrice * quantity);
     }, 0);
   }, [cartItems]);
 

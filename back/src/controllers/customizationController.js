@@ -1,4 +1,6 @@
 import { ColorPalette, SiteSettings, CustomizationHistory, sequelize } from '../models/index.js';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Get all available color palettes
@@ -1078,9 +1080,22 @@ export const getCurrentThemeSettings = async (req, res) => {
     ];
 
     // Usar imágenes personalizadas si existen, sino usar las por defecto
-    const carouselImages = (siteSettings.carousel_images && siteSettings.carousel_images.length > 0) 
-      ? siteSettings.carousel_images 
-      : defaultCarouselImages;
+    const rawImages = (siteSettings.carousel_images && siteSettings.carousel_images.length > 0)
+      ? siteSettings.carousel_images
+      : [];
+
+    // Filtrar imágenes que no existen físicamente cuando son rutas locales
+    const filteredImages = rawImages.filter((img) => {
+      const url = typeof img === 'string' ? img : img.image;
+      if (!url) return false;
+      if (url.startsWith('http')) return true;
+      // url esperada: /uploads/...
+      const relative = url.startsWith('/uploads/') ? url.replace(/^\/uploads\//, '') : url;
+      const diskPath = path.join(process.cwd(), 'uploads', relative);
+      return fs.existsSync(diskPath);
+    });
+
+    const carouselImages = filteredImages.length > 0 ? filteredImages : defaultCarouselImages;
 
     // Prepare the response data
     const responseData = {

@@ -439,3 +439,87 @@ export const deactivateAdmin = async (req, res) => {
     });
   }
 };
+
+// CHANGE USER ROLE
+export const changeUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { targetRole } = req.body;
+
+    // Validar rol destino
+    if (!targetRole) {
+      return res.status(400).json({
+        success: false,
+        message: 'El rol destino es obligatorio.',
+        code: 'TARGET_ROLE_REQUIRED'
+      });
+    }
+
+    if (targetRole !== 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'Rol destino inválido. Solo se permite promover a Administrador.',
+        code: 'TARGET_ROLE_INVALID'
+      });
+    }
+
+    // Buscar usuario
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado.',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // No permitir cambiar rol de super_admin
+    if (user.rol === 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'No se puede modificar el rol de un Super Administrador.',
+        code: 'SUPER_ADMIN_ROLE_IMMUTABLE'
+      });
+    }
+
+    // Validar estado actual
+    if (user.rol === 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'El usuario ya tiene rol de Administrador.',
+        code: 'USER_ALREADY_ADMIN'
+      });
+    }
+
+    if (user.rol !== 'cliente') {
+      return res.status(400).json({
+        success: false,
+        message: 'Solo se puede promover usuarios con rol Cliente.',
+        code: 'ONLY_CLIENT_CAN_BE_PROMOTED'
+      });
+    }
+
+    // Actualizar rol
+    user.rol = 'admin';
+    await user.save();
+
+    // Log de seguridad
+    console.log(`Role Change: Super Admin ${req.user.id} promovió al usuario ${user.id} (${user.email}) a administrador en ${new Date().toISOString()}`);
+
+    const userResponse = user.toJSON();
+    delete userResponse.password;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Rol actualizado a Administrador correctamente.',
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Error al cambiar rol de usuario:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al cambiar rol de usuario',
+      code: 'USER_ROLE_CHANGE_ERROR'
+    });
+  }
+};

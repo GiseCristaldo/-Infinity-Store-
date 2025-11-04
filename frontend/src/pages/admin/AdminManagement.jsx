@@ -8,7 +8,8 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon,
-  Visibility as ViewIcon, VisibilityOff as HideIcon
+  Visibility as ViewIcon, VisibilityOff as HideIcon,
+  ArrowUpward as PromoteIcon
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -211,6 +212,24 @@ function AdminManagement() {
     setOpenDialog(true);
   };
 
+  const handlePromoteToAdmin = async (adminId) => {
+    if (!window.confirm('¿Promover este usuario a Administrador?')) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/super-admin/users/${adminId}/role`, { targetRole: 'admin' }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      showSnackbar('Usuario promovido a Administrador correctamente');
+      loadAdmins();
+    } catch (error) {
+      console.error('Error promoviendo a administrador:', error);
+      const message = error.response?.data?.message || 'Error al promover usuario';
+      showSnackbar(message, 'error');
+    }
+  };
+
   // Filtrar admins por término de búsqueda
   const filteredAdmins = admins.filter(admin =>
     admin.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -323,6 +342,16 @@ function AdminManagement() {
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
+                      {user?.rol === 'super_admin' && admin.rol === 'cliente' && (
+                        <Tooltip title="Promover a Admin">
+                          <IconButton 
+                            onClick={() => handlePromoteToAdmin(admin.id)}
+                            color="primary"
+                          >
+                            <PromoteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

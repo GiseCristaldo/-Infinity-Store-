@@ -1,27 +1,27 @@
 // src/components/ImageCarousel.jsx
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
+import { useTheme as useCustomTheme } from '../context/ThemeContext.jsx';
+import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import { useTheme } from '@mui/material/styles';
-import { useTheme as useCustomTheme } from '../context/ThemeContext.jsx';
 import axios from 'axios';
 
 const carouselItemSx = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  height: { xs: 200, sm: 300, md: 400 }, // Altura responsiva del slide
+  height: { xs: 200, sm: 300, md: 400 },
   color: 'primary.light',
   fontWeight: 900,
   textAlign: 'center',
   position: 'relative',
-  overflow: 'hidden', // Oculta el desbordamiento de la imagen
-  borderRadius: 12, // Bordes redondeados
+  overflow: 'hidden',
+  borderRadius: 12,
 };
 
 const overlaySx = {
@@ -30,7 +30,7 @@ const overlaySx = {
   left: 0,
   width: '100%',
   height: '100%',
-  backgroundColor: 'rgba(11, 11, 11, 0.63)', // Fondo semitransparente oscuro para el texto
+  backgroundColor: 'rgba(11, 11, 11, 0.63)',
   zIndex: 1,
 };
 
@@ -46,8 +46,8 @@ const contentSx = {
  * Utiliza Swiper.js para mostrar slides con ofertas o mensajes destacados.
  */
 function ImageCarousel() {
-  const theme = useTheme();
-  const { currentSettings, triggerRefresh } = useCustomTheme();
+  const muiTheme = useMuiTheme();
+  const { currentSettings } = useCustomTheme();
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -84,44 +84,68 @@ function ImageCarousel() {
     loadCarouselImages();
   }, [currentSettings]); // Se actualiza cuando cambian las configuraciones
 
+  const buildAbsoluteUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${url}`;
+  };
+
+  const toSlides = (images) => {
+    return images.map((imageData, index) => {
+      const imageUrl = typeof imageData === 'string' ? imageData : imageData.image;
+      const imageTitle = typeof imageData === 'object' && imageData.title ? imageData.title : `Slide ${index + 1}`;
+      const imageSubtitle = typeof imageData === 'object' && imageData.subtitle ? imageData.subtitle : 'Descubre nuestros productos destacados';
+
+      return {
+        id: index + 1,
+        image: buildAbsoluteUrl(imageUrl),
+        title: imageTitle,
+        description: imageSubtitle,
+        buttonText: 'Ver Productos',
+        link: '/products'
+      };
+    });
+  };
+
   const loadCarouselImages = async () => {
     try {
       setLoading(true);
       console.log('🎠 [ImageCarousel] Cargando imágenes...');
-      
+
       // Limpiar caché y cargar siempre desde la API para asegurar datos frescos
       console.log('🧹 [ImageCarousel] Limpiando caché...');
       localStorage.removeItem('themeSettings');
       localStorage.removeItem('themeSettingsTimestamp');
-      
-      console.log('📡 [ImageCarousel] Cargando desde API...');
+
+      // 1) Intentar con el nuevo endpoint público del carrusel
+      console.log('📡 [ImageCarousel] Intentando /api/carousel-new/public...');
+      try {
+        const respNew = await axios.get('/api/carousel-new/public', {
+          params: { _ts: Date.now() },
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        });
+        const imagesNew = respNew.data?.data || [];
+        console.log('📡 [ImageCarousel] Nuevo carrusel:', imagesNew);
+        if (Array.isArray(imagesNew) && imagesNew.length > 0) {
+          setSlides(toSlides(imagesNew));
+          return;
+        }
+      } catch (e) {
+        console.warn('⚠️ [ImageCarousel] Falló /api/carousel-new/public, se usará fallback:', e?.message || e);
+      }
+
+      // 2) Fallback al endpoint de settings actual
+      console.log('📡 [ImageCarousel] Cargando /api/settings/current como fallback...');
       const response = await axios.get('/api/settings/current', {
         params: { _ts: Date.now() },
         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       });
       const carouselImages = response.data.data?.carousel_images || [];
-      console.log('📡 [ImageCarousel] Imágenes recibidas:', carouselImages);
-      
+      console.log('📡 [ImageCarousel] Imágenes recibidas (settings):', carouselImages);
+
       if (carouselImages.length > 0) {
-        // Convertir las imágenes de la API en slides
-        const dynamicSlides = carouselImages.map((imageData, index) => {
-          // Manejar tanto el formato antiguo (string) como el nuevo (objeto)
-          const imageUrl = typeof imageData === 'string' ? imageData : imageData.image;
-          const imageTitle = typeof imageData === 'object' && imageData.title ? imageData.title : `Slide ${index + 1}`;
-          const imageSubtitle = typeof imageData === 'object' && imageData.subtitle ? imageData.subtitle : 'Descubre nuestros productos destacados';
-          
-          return {
-            id: index + 1,
-            image: imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageUrl}`,
-            title: imageTitle,
-            description: imageSubtitle,
-            buttonText: 'Ver Productos',
-            link: '/products'
-          };
-        });
-        setSlides(dynamicSlides);
+        setSlides(toSlides(carouselImages));
       } else {
-        // Usar slides por defecto si no hay imágenes personalizadas
         setSlides(defaultSlides);
       }
     } catch (error) {
@@ -150,7 +174,7 @@ function ImageCarousel() {
     );
   }
 
-  if (slides.length === 0) {
+  if (!slides || slides.length === 0) {
     return (
       <Box sx={{ 
         width: '100vw', 
@@ -178,9 +202,9 @@ function ImageCarousel() {
         style={{
           width: '100%',
           height: '100%',
-          '--swiper-theme-color': theme.palette.primary.main,        // bullets y barra
-          '--swiper-pagination-color': theme.palette.primary.main,   // bullets
-          '--swiper-navigation-color': theme.palette.primary.main,   // flechas
+          '--swiper-theme-color': muiTheme.palette.primary.main,
+          '--swiper-pagination-color': muiTheme.palette.primary.main,
+          '--swiper-navigation-color': muiTheme.palette.primary.main,
         }}
       >
         {slides.map((slide) => (

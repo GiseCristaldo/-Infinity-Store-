@@ -511,16 +511,6 @@ function ProductDetailPage() {
               <Button
                 variant="outlined"
                 fullWidth
-                disabled={product.stock === 0}
-                onClick={() => handleAddToCart(product)}
-                sx={BUTTON_STYLES.outlined}
-              >
-                Añadir al Carrito
-              </Button>
-
-              <Button
-                variant="outlined"
-                fullWidth
                 component={Link}
                 to="/products"
                 sx={{

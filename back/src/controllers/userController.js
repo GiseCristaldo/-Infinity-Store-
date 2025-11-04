@@ -357,18 +357,24 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    // Update fields
+    // Update allowed fields for Admin: nombre, email (no role changes)
     user.nombre = nombre || user.nombre;
     user.email = email || user.email;
-    user.rol = rol || user.rol;
 
-        await user.save();
+    // Prevent role changes via Admin endpoint
+    if (rol && rol !== user.rol) {
+      // Intentionally ignore role updates from Admin; role governance is Super Admin-only
+      // Optionally, you could return 403 here if needed:
+      // return res.status(403).json({ message: 'No permitido cambiar rol desde Admin.' });
+    }
+
+    await user.save();
 
     // Return the updated user (without password)
-        const userResponse = user.toJSON();
-        delete userResponse.password;
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
-        res.status(200).json({ message: 'Usuario actualizado correctamente', user: userResponse });
+    res.status(200).json({ message: 'Usuario actualizado correctamente', user: userResponse });
 
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
@@ -393,5 +399,112 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor al eliminar usuario' });
+  }
+};
+
+export const loginSuperAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validar campos requeridos
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email y contraseña son obligatorios.' });
+    }
+
+    // Verificar si el usuario existe
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ message: 'Credenciales inválidas (email o contraseña incorrectos).' });
+    }
+
+    // Si la cuenta fue creada con Google, debe usar el botón de Google.
+    if (user.loginMethod === 'google') {
+      return res.status(403).json({ 
+        message: 'Esta cuenta fue registrada usando Google. Por favor, utiliza el botón "Iniciar sesión con Google".'
+      });
+    }
+
+    // Validar rol de super administrador
+    if (user.rol !== 'super_admin') {
+      return res.status(403).json({ message: 'Acceso denegado: se requiere rol de super administrador.' });
+    }
+
+    // Verificar contraseña
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ message: 'Credenciales inválidas (email o contraseña incorrectos).' });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { user: { id: user.id, rol: user.rol } },
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    res.json({
+      message: 'Login de super administrador exitoso',
+      token,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email,
+        rol: user.rol
+      }
+    });
+  } catch (error) {
+    console.error('Error al iniciar sesión como super admin:', error);
+    res.status(500).json({ message: 'Error interno del servidor al iniciar sesión como super administrador' });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'nombre', 'email', 'rol', 'avatar']
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Error al obtener perfil del usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { nombre, email } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    // Actualizar campos básicos
+    if (nombre) user.nombre = nombre;
+    if (email) user.email = email;
+
+    // Si se subió un avatar, actualizar la ruta
+    if (req.file) {
+      // Multer deja path como 'uploads/avatars/<filename>'
+      user.avatar = req.file.path;
+    }
+
+    await user.save();
+
+    const userResponse = user.toJSON();
+    delete userResponse.password;
+
+    res.status(200).json({ message: 'Perfil actualizado correctamente', user: userResponse });
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    res.status(500).json({ message: 'Error interno del servidor al actualizar perfil' });
   }
 };
