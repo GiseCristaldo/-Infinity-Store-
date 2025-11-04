@@ -87,28 +87,23 @@ function ImageCarousel() {
   const loadCarouselImages = async () => {
     try {
       setLoading(true);
-      
-      // Usar imágenes del ThemeContext si están disponibles
-      let carouselImages = currentSettings?.carousel_images || [];
-      
-      // Si no hay imágenes en el contexto, cargar desde la API
-      if (carouselImages.length === 0) {
-        const response = await axios.get('/api/settings/current');
-        carouselImages = response.data.data?.carousel_images || [];
-      }
+      // Limpiar caché y cargar siempre desde la API para asegurar datos frescos
+      localStorage.removeItem('themeSettings');
+      localStorage.removeItem('themeSettingsTimestamp');
+      const response = await axios.get('/api/carousel-new/public', {
+        params: { _ts: Date.now() },
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
+      const carouselImages = response.data?.data || [];
       
       if (carouselImages.length > 0) {
-        // Convertir las imágenes de la API en slides
-        const dynamicSlides = carouselImages.map((imageData, index) => {
-          // Manejar tanto el formato antiguo (string) como el nuevo (objeto)
-          const imageUrl = typeof imageData === 'string' ? imageData : imageData.image;
-          const imageText = typeof imageData === 'object' && imageData.text ? imageData.text : `Slide ${index + 1}`;
-          
+        // Convertir las imágenes de la nueva API en slides
+        const dynamicSlides = carouselImages.map((imageData) => {
           return {
-            id: index + 1,
-            image: imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageUrl}`,
-            title: imageText,
-            description: 'Descubre nuestros productos destacados',
+            id: imageData.id,
+            image: imageData.image.startsWith('http') ? imageData.image : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageData.image}`,
+            title: imageData.title || 'Slide sin título',
+            description: imageData.subtitle || 'Descubre nuestros productos destacados',
             buttonText: 'Ver Productos',
             link: '/products'
           };

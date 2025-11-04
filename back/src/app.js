@@ -123,8 +123,16 @@ app.use('/api/admin', adminRoutes);
 // 11. PUBLIC SETTINGS: Prefijo /api/settings
 app.use('/api/settings', settingsRoutes);
 
-// 12. IMAGE MANAGEMENT: Prefijo /api/customization
-app.use('/api/customization', imageRoutes);
+// 12. IMAGE MANAGEMENT: Prefijo /api/images
+app.use('/api/images', imageRoutes);
+
+// 13. SIMPLE CAROUSEL: Prefijo /api/carousel
+import simpleCarouselRoutes from './routes/simpleCarouselRoutes.js';
+app.use('/api/carousel', simpleCarouselRoutes);
+
+// 14. NEW CAROUSEL (TABLE-BASED): Prefijo /api/carousel-new
+import carouselRoutes from './routes/carouselRoutes.js';
+app.use('/api/carousel-new', carouselRoutes);
 
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {

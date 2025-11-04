@@ -122,4 +122,14 @@ export const cleanupFiles = (files) => {
             }
         }
     });
-};
+}; 
+
+// Middleware genérico para subir una sola imagen
+export const uploadSingleImage = multer({
+    storage: customizationStorage,
+    fileFilter: imageFileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB máximo
+        files: 1 // Solo una imagen
+    }
+}).single('image'); // Campo 'image' como envía el frontend

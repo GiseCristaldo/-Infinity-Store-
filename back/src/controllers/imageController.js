@@ -544,3 +544,250 @@ export const reorderCarouselImages = async (req, res) => {
         });
     }
 };
+//--- Subir imagen al carousel ---
+export const uploadCarouselImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se ha subido ninguna imagen'
+            });
+        }
+
+        // Obtener configuración actual
+        let siteSettings = await SiteSettings.findOne();
+        if (!siteSettings) {
+            siteSettings = await SiteSettings.create({
+                site_name: 'Infinity Store',
+                updated_by: req.user.id
+            });
+        }
+
+        // Obtener imágenes actuales del carousel
+        let carouselImages = siteSettings.carousel_images || [];
+        
+        // Verificar que no exceda el límite de 5 imágenes
+        if (carouselImages.length >= 5) {
+            cleanupFiles(req.file);
+            return res.status(400).json({
+                success: false,
+                message: 'Máximo 5 imágenes permitidas en el carousel'
+            });
+        }
+
+        // Agregar nueva imagen
+        const newImageUrl = `/uploads/customization/${req.file.filename}`;
+        carouselImages.push({
+            image: newImageUrl,
+            title: '',
+            subtitle: ''
+        });
+
+        // Actualizar configuración
+        await siteSettings.update({
+            carousel_images: carouselImages,
+            updated_by: req.user.id
+        });
+
+        // Registrar en historial
+        await CustomizationHistory.create({
+            change_type: 'carousel_image_added',
+            old_value: JSON.stringify(siteSettings.carousel_images || []),
+            new_value: JSON.stringify(carouselImages),
+            changed_by: req.user.id
+        });
+
+        // Limpiar caché
+        clearSettingsCache();
+
+        res.json({
+            success: true,
+            message: 'Imagen agregada al carousel exitosamente',
+            data: {
+                carousel_images: carouselImages
+            }
+        });
+
+    } catch (error) {
+        console.error('Error uploading carousel image:', error);
+        if (req.file) {
+            cleanupFiles(req.file);
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+};
+
+// --- Actualizar texto de slide del carousel ---
+export const updateCarouselSlideText = async (req, res) => {
+    try {
+        const { index } = req.params;
+        const { title, subtitle } = req.body;
+
+        // Obtener configuración actual
+        const siteSettings = await SiteSettings.findOne();
+        if (!siteSettings) {
+            return res.status(404).json({
+                success: false,
+                message: 'Configuración no encontrada'
+            });
+        }
+
+        let carouselImages = siteSettings.carousel_images || [];
+        
+        // Verificar que el índice sea válido
+        if (index < 0 || index >= carouselImages.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'Índice de imagen no válido'
+            });
+        }
+
+        // Guardar valores anteriores para el historial
+        const oldValue = JSON.stringify(carouselImages);
+
+        // Actualizar texto
+        carouselImages[index] = {
+            ...carouselImages[index],
+            title: title || '',
+            subtitle: subtitle || ''
+        };
+
+        // Actualizar configuración
+        await siteSettings.update({
+            carousel_images: carouselImages,
+            updated_by: req.user.id
+        });
+
+        // Registrar en historial
+        await CustomizationHistory.create({
+            change_type: 'carousel_text_updated',
+            old_value: oldValue,
+            new_value: JSON.stringify(carouselImages),
+            changed_by: req.user.id
+        });
+
+        // Limpiar caché
+        clearSettingsCache();
+
+        res.json({
+            success: true,
+            message: 'Texto del slide actualizado exitosamente',
+            data: {
+                carousel_images: carouselImages
+            }
+        });
+
+    } catch (error) {
+        console.error('Error updating carousel slide text:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+};
+
+// --- Eliminar imagen del carousel ---
+export const deleteCarouselImage = async (req, res) => {
+    try {
+        const { index } = req.params;
+
+        // Obtener configuración actual
+        const siteSettings = await SiteSettings.findOne();
+        if (!siteSettings) {
+            return res.status(404).json({
+                success: false,
+                message: 'Configuración no encontrada'
+            });
+        }
+
+        let carouselImages = siteSettings.carousel_images || [];
+        
+        // Verificar que el índice sea válido
+        if (index < 0 || index >= carouselImages.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'Índice de imagen no válido'
+            });
+        }
+
+        // Guardar valores anteriores para el historial
+        const oldValue = JSON.stringify(carouselImages);
+        const imageToDelete = carouselImages[index];
+
+        // Eliminar archivo físico
+        if (imageToDelete.image) {
+            const imagePath = path.join('uploads/customization', path.basename(imageToDelete.image));
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        // Eliminar imagen del array
+        carouselImages.splice(index, 1);
+
+        // Actualizar configuración
+        await siteSettings.update({
+            carousel_images: carouselImages,
+            updated_by: req.user.id
+        });
+
+        // Registrar en historial
+        await CustomizationHistory.create({
+            change_type: 'carousel_image_deleted',
+            old_value: oldValue,
+            new_value: JSON.stringify(carouselImages),
+            changed_by: req.user.id
+        });
+
+        // Limpiar caché
+        clearSettingsCache();
+
+        res.json({
+            success: true,
+            message: 'Imagen eliminada del carousel exitosamente',
+            data: {
+                carousel_images: carouselImages
+            }
+        });
+
+    } catch (error) {
+        console.error('Error deleting carousel image:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+};
+
+// --- Función genérica para subir imágenes ---
+export const uploadImage = async (req, res) => {
+    try {
+        const { type } = req.body;
+
+        if (type === 'hero') {
+            return uploadHeroImage(req, res);
+        } else if (type === 'carousel') {
+            return uploadCarouselImage(req, res);
+        } else {
+            if (req.file) {
+                cleanupFiles(req.file);
+            }
+            return res.status(400).json({
+                success: false,
+                message: 'Tipo de imagen no válido'
+            });
+        }
+    } catch (error) {
+        console.error('Error in uploadImage:', error);
+        if (req.file) {
+            cleanupFiles(req.file);
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+};

@@ -1144,4 +1144,53 @@ export const getCurrentThemeSettings = async (req, res) => {
       code: 'GET_THEME_SETTINGS_ERROR'
     });
   }
+};// --- Controlar visibilidad del hero section ---
+export const updateHeroVisibility = async (req, res) => {
+    try {
+        const { enabled } = req.body;
+
+        // Obtener configuración actual
+        let siteSettings = await SiteSettings.findOne();
+        if (!siteSettings) {
+            siteSettings = await SiteSettings.create({
+                site_name: 'Infinity Store',
+                updated_by: req.user.id
+            });
+        }
+
+        // Guardar valor anterior para el historial
+        const oldValue = siteSettings.hero_enabled;
+
+        // Actualizar visibilidad
+        await siteSettings.update({
+            hero_enabled: enabled,
+            updated_by: req.user.id
+        });
+
+        // Registrar en historial
+        await CustomizationHistory.create({
+            change_type: 'hero_visibility_changed',
+            old_value: String(oldValue),
+            new_value: String(enabled),
+            changed_by: req.user.id
+        });
+
+        // Limpiar caché
+        clearSettingsCache();
+
+        res.json({
+            success: true,
+            message: `Hero section ${enabled ? 'habilitado' : 'deshabilitado'} exitosamente`,
+            data: {
+                hero_enabled: enabled
+            }
+        });
+
+    } catch (error) {
+        console.error('Error updating hero visibility:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
 };

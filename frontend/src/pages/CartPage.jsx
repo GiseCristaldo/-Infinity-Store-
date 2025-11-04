@@ -281,9 +281,9 @@ function CartPage() {
         Carrito de Compras
       </Typography>
 
-      <Grid container spacing={{ xs: 2, md: 4 }}>
+      <Grid container spacing={2}>
         {/* Lista de productos */}
-        <Grid item xs={12} sm={8}>
+        <Grid item xs={8}>
           <Box sx={{ 
             backgroundColor: '#ffffff',
             borderRadius: 3,
@@ -579,7 +579,7 @@ function CartPage() {
         </Grid>
 
         {/* Resumen y checkout */}
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4}>
           <Box sx={{ 
             p: { xs: 2, sm: 3 },
             backgroundColor: '#ffffff',

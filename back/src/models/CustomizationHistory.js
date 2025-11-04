@@ -9,7 +9,17 @@ export const CustomizationHistory = sequelize.define('CustomizationHistory', {
         allowNull: false
     },
     change_type: {
-        type: DataTypes.ENUM('color_palette', 'typography', 'hero_image', 'carousel', 'branding'),
+        type: DataTypes.ENUM(
+            'color_palette', 
+            'typography', 
+            'hero_image', 
+            'carousel', 
+            'branding',
+            'carousel_image_added',
+            'carousel_text_updated',
+            'carousel_image_deleted',
+            'hero_visibility_changed'
+        ),
         allowNull: false
     },
     old_value: {

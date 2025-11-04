@@ -44,6 +44,7 @@ import AdminManagement from '../pages/admin/AdminManagement.jsx';
 import ThemeCustomization from '../pages/admin/ThemeCustomization.jsx';
 import TypographySettings from '../pages/admin/TypographySettings.jsx';
 import ImageManagement from '../pages/admin/ImageManagement.jsx';
+import SimpleCarouselManager from '../components/SimpleCarouselManager.jsx';
 import BrandingSettings from '../pages/admin/BrandingSettings.jsx';
 import ChangeHistory from '../pages/admin/ChangeHistory.jsx';
 import RequireSuperAdmin from '../components/auth/RequireSuperAdmin.jsx';
@@ -138,7 +139,7 @@ function AppRoutes() {
         <Route path="/super-admin/admins" element={<ErrorBoundary><AdminManagement /></ErrorBoundary>} />
         <Route path="/super-admin/theme" element={<ErrorBoundary><ThemeCustomization /></ErrorBoundary>} />
         <Route path="/super-admin/typography" element={<ErrorBoundary><TypographySettings /></ErrorBoundary>} />
-        <Route path="/super-admin/images" element={<ErrorBoundary><ImageManagement /></ErrorBoundary>} />
+        <Route path="/super-admin/images" element={<ErrorBoundary><SimpleCarouselManager /></ErrorBoundary>} />
         <Route path="/super-admin/branding" element={<ErrorBoundary><BrandingSettings /></ErrorBoundary>} />
         <Route path="/super-admin/history" element={<ErrorBoundary><ChangeHistory /></ErrorBoundary>} />
       </Route>

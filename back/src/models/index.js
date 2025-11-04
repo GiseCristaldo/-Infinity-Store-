@@ -8,7 +8,8 @@ import { OrderDetail } from './OrderDetail.js';
 import { File } from './File.js';
 import { ColorPalette } from './ColorPalette.js';
 import { SiteSettings } from './SiteSettings.js';
-import { CustomizationHistory } from './CustomizationHistory.js'; 
+import { CustomizationHistory } from './CustomizationHistory.js';
+import CarouselImage from './CarouselImage.js'; 
 
 
 // --- Definición de Relaciones (Asociaciones) ---
@@ -115,4 +116,5 @@ export {
   ColorPalette,
   SiteSettings,
   CustomizationHistory,
+  CarouselImage,
 };

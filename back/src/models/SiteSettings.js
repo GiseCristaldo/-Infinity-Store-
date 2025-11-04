@@ -26,9 +26,15 @@ export const SiteSettings = sequelize.define('SiteSettings', {
     carousel_images: {
         type: DataTypes.JSON,
         allowNull: true,
-        defaultValue: [], // Array de objetos con {image: string, text: string}
-        comment: 'Array de objetos con estructura: [{image: "url", text: "texto del slide"}]'
+        defaultValue: [], // Array de objetos con {image: string, title: string, subtitle: string}
+        comment: 'Array de objetos con estructura: [{image: "url", title: "título", subtitle: "subtítulo"}]'
     },
+    // hero_enabled: {
+    //     type: DataTypes.BOOLEAN,
+    //     allowNull: false,
+    //     defaultValue: true,
+    //     comment: 'Controla si el hero section es visible en el frontend'
+    // }, // TODO: Para uso futuro
     footer_content: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -89,6 +95,7 @@ SiteSettings.getOrCreateDefault = async function() {
                 site_name: 'Infinity Store',
                 hero_image_url: null,
                 carousel_images: [],
+                // hero_enabled: true, // TODO: Para uso futuro
                 footer_content: '© 2024 Infinity Store. Todos los derechos reservados.',
                 active_palette_id: 1, // Asumiendo que la primera paleta será la activa
                 primary_font: 'Inter',
