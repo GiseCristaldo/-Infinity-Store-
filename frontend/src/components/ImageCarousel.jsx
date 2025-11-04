@@ -87,23 +87,34 @@ function ImageCarousel() {
   const loadCarouselImages = async () => {
     try {
       setLoading(true);
+      console.log('🎠 [ImageCarousel] Cargando imágenes...');
+      
       // Limpiar caché y cargar siempre desde la API para asegurar datos frescos
+      console.log('🧹 [ImageCarousel] Limpiando caché...');
       localStorage.removeItem('themeSettings');
       localStorage.removeItem('themeSettingsTimestamp');
-      const response = await axios.get('/api/carousel-new/public', {
+      
+      console.log('📡 [ImageCarousel] Cargando desde API...');
+      const response = await axios.get('/api/settings/current', {
         params: { _ts: Date.now() },
         headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       });
-      const carouselImages = response.data?.data || [];
+      const carouselImages = response.data.data?.carousel_images || [];
+      console.log('📡 [ImageCarousel] Imágenes recibidas:', carouselImages);
       
       if (carouselImages.length > 0) {
-        // Convertir las imágenes de la nueva API en slides
-        const dynamicSlides = carouselImages.map((imageData) => {
+        // Convertir las imágenes de la API en slides
+        const dynamicSlides = carouselImages.map((imageData, index) => {
+          // Manejar tanto el formato antiguo (string) como el nuevo (objeto)
+          const imageUrl = typeof imageData === 'string' ? imageData : imageData.image;
+          const imageTitle = typeof imageData === 'object' && imageData.title ? imageData.title : `Slide ${index + 1}`;
+          const imageSubtitle = typeof imageData === 'object' && imageData.subtitle ? imageData.subtitle : 'Descubre nuestros productos destacados';
+          
           return {
-            id: imageData.id,
-            image: imageData.image.startsWith('http') ? imageData.image : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageData.image}`,
-            title: imageData.title || 'Slide sin título',
-            description: imageData.subtitle || 'Descubre nuestros productos destacados',
+            id: index + 1,
+            image: imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${imageUrl}`,
+            title: imageTitle,
+            description: imageSubtitle,
             buttonText: 'Ver Productos',
             link: '/products'
           };

@@ -154,8 +154,12 @@ export const getProductById = async (req, res) => {
         // Limpiar el campo files del JSON de respuesta
         delete productResponse.files;
         
-        // Asegurar que el precio sea un número
-        productResponse.price = parseFloat(product.price);
+        // Formatear el precio
+        productResponse.price = parseFloat(product.price).toLocaleString('es-AR', {
+            style: 'currency',
+            currency: 'ARS',
+            minimumFractionDigits: 2
+        });
 
         // Eliminar el campo 'imagenURL' si aún existe para evitar confusiones
         delete productResponse.imagenURL;

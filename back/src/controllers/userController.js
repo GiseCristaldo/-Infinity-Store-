@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library'; 
 import { sendEmail, tplWelcomeUser, tplNewUserAdmin, ADMIN_EMAIL } from '../services/email.service.js';
-import { SiteSettings } from '../models/index.js'; 
 
 // REGISTRO de usuario - siempre cliente
 export const registerUser = async (req, res) => {
@@ -215,49 +214,22 @@ export const googleAuthHandler = async (req, res) => {
             }
         }
         
-        // Check if user account is active (for both existing and new users)
-        if (!user.is_active) {
-            return res.status(403).json({ 
-                message: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.' 
-            });
-        }
-        
-        // 4. Genera el token JWT local con permisos basados en rol
-        const permissions = [];
-        if (user.rol === 'admin') {
-          permissions.push('admin');
-        } else if (user.rol === 'super_admin') {
-          permissions.push('admin', 'super_admin', 'customization');
-        }
-
+        // 4. Genera el token JWT local (para mantener la sesión en la API)
         const token = jwt.sign(
-            { 
-              user: { 
-                id: user.id, 
-                rol: user.rol,
-                permissions: permissions
-              } 
-            },
+            { user: { id: user.id, rol: user.rol } },
             process.env.JWT_SECRET,
-            { expiresIn: user.rol === 'super_admin' ? '4h' : '2h' }
+            { expiresIn: '2h' } // PRUEBA: Token expira en 2 horas
         );
-
-        // Log admin/super admin Google logins for security
-        if (user.rol === 'admin' || user.rol === 'super_admin') {
-          console.log(`${user.rol.toUpperCase()} Google Login: User ${user.id} (${user.email}) logged in at ${new Date().toISOString()}`);
-        }
 
         // 5. Devuelve el éxito
         res.json({
-            success: true,
             message: 'Login con Google exitoso',
             token,
             user: {
                 id: user.id,
                 nombre: user.nombre,
                 email: user.email,
-                rol: user.rol,
-                permissions: permissions
+                rol: user.rol
             }
         });
 
@@ -265,97 +237,6 @@ export const googleAuthHandler = async (req, res) => {
         console.error('Error en el login con Google:', error);
         res.status(500).json({ message: 'Error interno del servidor al procesar el login con Google.' });
     }
-};
-
-// SUPER ADMIN LOGIN - Enhanced login with super admin specific handling
-export const loginSuperAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Validar campos requeridos
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Email y contraseña son obligatorios para el acceso de super administrador.',
-        code: 'SUPER_ADMIN_CREDENTIALS_REQUIRED'
-      });
-    }
-
-    // Verificar si el usuario existe
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Credenciales de super administrador inválidas.',
-        code: 'SUPER_ADMIN_INVALID_CREDENTIALS'
-      });
-    }
-
-    // Verificar que el usuario tenga rol de super_admin
-    if (user.rol !== 'super_admin') {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Acceso denegado: cuenta sin privilegios de super administrador.',
-        code: 'SUPER_ADMIN_INSUFFICIENT_PRIVILEGES'
-      });
-    }
-
-    // Verificar contraseña
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Credenciales de super administrador inválidas.',
-        code: 'SUPER_ADMIN_INVALID_CREDENTIALS'
-      });
-    }
-
-    // Check if super admin account is active
-    if (!user.is_active) {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Cuenta de super administrador desactivada. Contacta al soporte técnico.',
-        code: 'SUPER_ADMIN_ACCOUNT_INACTIVE'
-      });
-    }
-
-    // Generar token JWT con información extendida para super admin
-    const token = jwt.sign(
-      { 
-        user: { 
-          id: user.id, 
-          rol: user.rol,
-          permissions: ['admin', 'super_admin', 'customization'] // Explicit permissions
-        } 
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '4h' } // Longer session for super admin
-    );
-
-    // Log successful super admin login
-    console.log(`Super Admin Login: User ${user.id} (${user.email}) logged in at ${new Date().toISOString()}`);
-
-    res.json({
-      success: true,
-      message: 'Login de super administrador exitoso',
-      token,
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        email: user.email,
-        rol: user.rol,
-        permissions: ['admin', 'super_admin', 'customization']
-      }
-    });
-  } catch (error) {
-    console.error('Error en login de super administrador:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Error interno del servidor al procesar login de super administrador',
-      code: 'SUPER_ADMIN_LOGIN_ERROR'
-    });
-  }
 };
 
 // LOGIN admin or client
@@ -389,48 +270,21 @@ export const loginUser = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ message: 'Credenciales inválidas (email o contraseña incorrectos).' }); // Unified message
 
-    // Check if user account is active
-    if (!user.is_active) {
-        return res.status(403).json({ 
-            message: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.' 
-        });
-    }
-
-    // Generar token JWT con permisos basados en rol
-    const permissions = [];
-    if (user.rol === 'admin') {
-      permissions.push('admin');
-    } else if (user.rol === 'super_admin') {
-      permissions.push('admin', 'super_admin', 'customization');
-    }
-
+    // Generar token JWT
     const token = jwt.sign(
-      { 
-        user: { 
-          id: user.id, 
-          rol: user.rol,
-          permissions: permissions
-        } 
-      },
+      { user:{ id: user.id, rol: user.rol } },
       process.env.JWT_SECRET,
-      { expiresIn: user.rol === 'super_admin' ? '4h' : '2h' } // Longer session for super admin
+      { expiresIn: '2h' } // PRUEBA: Token expira en 2 horas
     );
 
-    // Log admin/super admin logins for security
-    if (user.rol === 'admin' || user.rol === 'super_admin') {
-      console.log(`${user.rol.toUpperCase()} Login: User ${user.id} (${user.email}) logged in at ${new Date().toISOString()}`);
-    }
-
     res.json({
-      success: true,
       message: 'Login exitoso',
       token,
       user: {
         id: user.id,
         nombre: user.nombre,
         email: user.email,
-        rol: user.rol,
-        permissions: permissions
+        rol: user.rol
       }
     });
   } catch (error) {
@@ -458,8 +312,6 @@ export const getLoggedUser = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
-
-
 
 // GET ALL USERS (Admin only) 
 export const getAllUsers = async (req, res) => {
@@ -508,7 +360,7 @@ export const updateUser = async (req, res) => {
     // Update fields
     user.nombre = nombre || user.nombre;
     user.email = email || user.email;
-
+    user.rol = rol || user.rol;
 
         await user.save();
 
@@ -541,166 +393,5 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor al eliminar usuario' });
-  }
-};
-
-// UPDATE USER PROFILE
-export const updateProfile = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { nombre, email, currentPassword, newPassword } = req.body;
-
-    // Find the user
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-    }
-
-    // Validate required fields
-    if (!nombre || !email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nombre y email son requeridos'
-      });
-    }
-
-    // Validate email format
-    const trimmedEmail = email.trim();
-    if (trimmedEmail.length < 5 || trimmedEmail.length > 254) {
-      return res.status(400).json({
-        success: false,
-        message: 'El email debe tener entre 5 y 254 caracteres'
-      });
-    }
-
-    const atIndex = trimmedEmail.indexOf('@');
-    const dotIndex = trimmedEmail.lastIndexOf('.');
-    if (atIndex === -1 || dotIndex < atIndex || dotIndex === -1 || dotIndex === trimmedEmail.length - 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Formato de email inválido'
-      });
-    }
-
-    // Check if email is already taken by another user
-    if (trimmedEmail !== user.email) {
-      const existingUser = await User.findOne({ where: { email: trimmedEmail } });
-      if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: 'Este email ya está registrado por otro usuario'
-        });
-      }
-    }
-
-    // If changing password, validate current password
-    if (newPassword) {
-      if (!currentPassword) {
-        return res.status(400).json({
-          success: false,
-          message: 'Contraseña actual requerida para cambiar contraseña'
-        });
-      }
-
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      if (!isCurrentPasswordValid) {
-        return res.status(400).json({
-          success: false,
-          message: 'Contraseña actual incorrecta'
-        });
-      }
-
-      // Validate new password
-      if (newPassword.length < 6) {
-        return res.status(400).json({
-          success: false,
-          message: 'La nueva contraseña debe tener al menos 6 caracteres'
-        });
-      }
-
-      // Hash new password
-      const saltRounds = 10;
-      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
-      user.password = hashedNewPassword;
-    }
-
-    // Update user data
-    user.nombre = nombre;
-    user.email = trimmedEmail;
-
-    // Handle avatar upload if present
-    if (req.file) {
-      // Here you would handle file upload to your storage service
-      // For now, we'll just store the filename
-      user.avatar = `/uploads/avatars/${req.file.filename}`;
-    }
-
-    await user.save();
-
-    // Return updated user data (without password)
-    const updatedUser = {
-      id: user.id,
-      nombre: user.nombre,
-      email: user.email,
-      rol: user.rol,
-      avatar: user.avatar,
-      date_register: user.date_register,
-      is_active: user.is_active
-    };
-
-    res.json({
-      success: true,
-      message: 'Perfil actualizado exitosamente',
-      user: updatedUser
-    });
-
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor al actualizar perfil'
-    });
-  }
-};
-
-// GET USER PROFILE
-export const getProfile = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    
-    const user = await User.findByPk(userId, {
-      attributes: { exclude: ['password'] }
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-    }
-
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        email: user.email,
-        rol: user.rol,
-        avatar: user.avatar,
-        date_register: user.date_register,
-        is_active: user.is_active
-      }
-    });
-
-  } catch (error) {
-    console.error('Error getting profile:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor al obtener perfil'
-    });
   }
 };

@@ -54,35 +54,14 @@ function ImageManagement() {
 
   const loadCurrentImages = async () => {
     try {
-      console.log('🔄 [ImageManagement] Iniciando carga de imágenes...');
-      
-      // Usar fetch con URL relativa como ThemeContext
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/settings/current?_ts=${Date.now()}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Accept': 'application/json'
-        }
+      const response = await api.get('/api/settings/current', {
+        params: { _ts: Date.now() },
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('📡 [ImageManagement] Respuesta completa:', data);
-      console.log('🎠 [ImageManagement] Carousel images recibidas:', data.data?.carousel_images);
-      
-      const newState = {
-        hero_image_url: data.data?.hero_image_url,
-        carousel_images: data.data?.carousel_images || []
-      };
-      
-      console.log('📝 [ImageManagement] Nuevo estado a establecer:', newState);
-      setCurrentImages(newState);
-      console.log('✅ [ImageManagement] Estado actualizado');
+      setCurrentImages({
+        hero_image_url: response.data.data?.hero_image_url,
+        carousel_images: response.data.data?.carousel_images || []
+      });
     } catch (error) {
       console.error('Error loading current images:', error);
       const status = error.response?.status;
@@ -121,23 +100,10 @@ function ImageManagement() {
 
     try {
       console.log('📤 [Upload] Subiendo imagen...');
-      
-      // Usar fetch con URL relativa para aprovechar el proxy de Vite
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/images/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+      const response = await api.post('/api/images/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('✅ [Upload] Respuesta del servidor:', data);
+      console.log('✅ [Upload] Respuesta del servidor:', response.data);
       
       showSnackbar('Imagen agregada al carousel exitosamente', 'success');
       clearFrontendCache();
@@ -189,27 +155,11 @@ function ImageManagement() {
   const handleSaveSlideText = async () => {
     try {
       console.log('📝 [EditText] Guardando texto:', { title: editDialog.title, subtitle: editDialog.subtitle });
-      
-      // Usar fetch con URL relativa para aprovechar el proxy de Vite
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/images/carousel/${editDialog.index}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: editDialog.title,
-          subtitle: editDialog.subtitle
-        })
+      const response = await api.put(`/api/images/carousel/${editDialog.index}`, {
+        title: editDialog.title,
+        subtitle: editDialog.subtitle
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('✅ [EditText] Respuesta del servidor:', data);
+      console.log('✅ [EditText] Respuesta del servidor:', response.data);
       
       showSnackbar('Texto actualizado exitosamente', 'success');
       setEditDialog({ open: false, index: null, title: '', subtitle: '' });
@@ -234,20 +184,7 @@ function ImageManagement() {
   const handleDeleteCarouselImage = async (index) => {
     try {
       console.log('🗑️ [Delete] Eliminando imagen:', index);
-      
-      // Usar fetch con URL relativa para aprovechar el proxy de Vite
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/images/carousel/${index}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      await api.delete(`/api/images/carousel/${index}`);
       console.log('✅ [Delete] Imagen eliminada del servidor');
       showSnackbar('Imagen eliminada exitosamente', 'success');
       clearFrontendCache();
@@ -289,10 +226,6 @@ function ImageManagement() {
       </Box>
     );
   }
-
-  // Log del estado actual para debug (comentado para producción)
-  // console.log('🖼️ [Render] Estado actual de currentImages:', currentImages);
-  // console.log('🖼️ [Render] Cantidad de imágenes:', currentImages.carousel_images?.length);
 
   return (
     <Box>
