@@ -44,6 +44,11 @@ export const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: true, // Users are active by default
         allowNull: false
+    },
+    avatar: {
+        type: DataTypes.STRING(255), // Ruta del archivo de avatar
+        allowNull: true, // El avatar es opcional
+        defaultValue: null
     }
 }, {
     tableName: 'users', // Nombre de la tabla en la base de datos (plural)
