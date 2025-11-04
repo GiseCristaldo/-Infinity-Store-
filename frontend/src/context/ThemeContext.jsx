@@ -307,8 +307,10 @@ export const DynamicThemeProvider = ({ children }) => {
         }
       }
       
-      // Fetch from API
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/settings/current`, {
+      // Fetch from API (use relative path with Vite proxy; fallback to env base URL)
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const url = baseUrl ? `${baseUrl}/api/settings/current` : `/api/settings/current`;
+      const response = await fetch(url, {
         headers: {
           'Cache-Control': forceRefresh ? 'no-cache' : 'max-age=300'
         }

@@ -93,6 +93,46 @@ async function createColorPalettes() {
         accent_color: '#7fb3d3',
         text_color: '#2c3e50',
         is_active: false
+      },
+      {
+        name: 'Monocromático Elegante',
+        primary_color: '#141414',
+        secondary_color: '#ffffff',
+        accent_color: '#f0f0f0',
+        text_color: '#141414',
+        is_active: false
+      },
+      {
+        name: 'Lavanda Suave',
+        primary_color: '#b4b4dc',
+        secondary_color: '#c8dcf0',
+        accent_color: '#f0f0f0',
+        text_color: '#141414',
+        is_active: false
+      },
+      {
+        name: 'Azul Serenidad',
+        primary_color: '#b4c8dc',
+        secondary_color: '#c8dcf0',
+        accent_color: '#ffffff',
+        text_color: '#141414',
+        is_active: false
+      },
+      {
+        name: 'Contraste Moderno',
+        primary_color: '#141414',
+        secondary_color: '#b4b4dc',
+        accent_color: '#f0f0f0',
+        text_color: '#ffffff',
+        is_active: false
+      },
+      {
+        name: 'Cielo Nublado',
+        primary_color: '#c8dcf0',
+        secondary_color: '#b4c8dc',
+        accent_color: '#f0f0f0',
+        text_color: '#141414',
+        is_active: false
       }
     ];
     

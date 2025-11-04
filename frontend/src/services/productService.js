@@ -51,8 +51,8 @@ export const createProduct = async (productData) => {
 
     const response = await axios.post(`${API_URL}/with-files`, formData, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+        // No fijar 'Content-Type': el navegador define el boundary automáticamente
       }
     });
     return response.data;
@@ -108,8 +108,8 @@ export const updateProduct = async (id, productData) => {
 
     const response = await axios.put(`${API_URL}/${id}/with-files`, formData, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+        // No fijar 'Content-Type': el navegador define el boundary automáticamente
       }
     });
     return response.data;
@@ -134,8 +134,8 @@ export const updateProduct = async (id, productData) => {
 
     const response = await axios.put(`${API_URL}/${id}/with-files`, formData, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+        // No fijar 'Content-Type': el navegador define el boundary automáticamente
       }
     });
     return response.data;

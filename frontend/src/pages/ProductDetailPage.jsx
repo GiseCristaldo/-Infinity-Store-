@@ -172,9 +172,10 @@ function ProductDetailPage() {
     <Container maxWidth="lg" sx={{ 
       py: 4,
       minHeight: '100vh',
-      background: currentSettings?.color_palette ? 
-        `linear-gradient(135deg, ${currentSettings.color_palette.accent_color}10 0%, ${currentSettings.color_palette.secondary_color}05 100%)` :
-        'transparent'
+      backgroundImage: 'var(--background-gradient)',
+      backgroundAttachment: 'fixed',
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'cover'
     }}>
       {/* Filtros desktop/tablet */}
       <Box sx={{ mb: 4, display: { xs: 'none', sm: 'block' } }}>
@@ -381,6 +382,7 @@ function ProductDetailPage() {
           <Box sx={{ 
             p: { xs: 2, md: 3, lg: 4 }, 
             ...CARD_STYLES.base,
+            backgroundColor: 'background.paper',
             width: '100%',
             minHeight: { xs: '350px', md: '500px', lg: '600px' },
             display: 'flex', 
@@ -389,35 +391,32 @@ function ProductDetailPage() {
             gap: 2,
           }}>
             {/* Título del producto */}
-            <Typography variant="h4" component="h1" gutterBottom sx={{ 
+            <Typography variant="h6" component="h1" gutterBottom sx={{ 
               color: currentSettings?.color_palette?.text_color || '#333333', 
               fontWeight: 700,
-              mb: 3,
+              mb: 2,
               textAlign: 'left',
-              fontSize: { xs: '1.8rem', sm: '2.2rem' },
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.4rem' },
             }}>
               {product.name}
             </Typography>
             
             {/* Categoría */}
             <Box sx={{ 
-              backgroundColor: currentSettings?.color_palette ? 
-                `${currentSettings.color_palette.accent_color}20` :
-                'rgba(0,0,0,0.05)',
+              backgroundColor: 'background.default',
               borderRadius: 2,
               p: 1.5,
               mb: 2,
-              textAlign: 'center',
-              border: currentSettings?.color_palette ? 
-                `1px solid ${currentSettings.color_palette.accent_color}40` :
-                '1px solid #e0e0e0',
+              textAlign: 'left',
+              border: '1px solid',
+              borderColor: 'divider',
             }}>
               <Typography
                 variant="body1"
                 sx={{
                   fontWeight: 600,
                   fontFamily: '"Orbitron", sans-serif',
-                  color: '#7e57c2',
+                  color: 'text.primary',
                 }}
               >
                 <b>Categoría:</b> {product.category ? product.category.name : 'N/A'}
@@ -426,26 +425,23 @@ function ProductDetailPage() {
             
             {/* Descripción - NO CAMBIA DE POSICIÓN */}
             <Box sx={{ 
-              backgroundColor: currentSettings?.color_palette ? 
-                `${currentSettings.color_palette.accent_color}15` :
-                'rgba(0,0,0,0.05)',
+              backgroundColor: 'background.default',
               borderRadius: 2,
               p: 2,
               mb: 3,
-              flexGrow: 1, // Toma el espacio disponible
-              minHeight: '120px', // Altura mínima para consistencia
+              flexGrow: 1,
+              minHeight: '120px',
               display: 'flex',
-              alignItems: 'flex-start', // Alinea el texto al inicio
-              border: currentSettings?.color_palette ? 
-                `1px solid ${currentSettings.color_palette.accent_color}30` :
-                '1px solid #e0e0e0',
+              alignItems: 'flex-start',
+              border: '1px solid',
+              borderColor: 'divider',
             }}>
               <Typography variant="body1" sx={{ 
                 lineHeight: 1.6,
                 fontSize: '1.1rem',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                color: currentSettings?.color_palette?.text_color || '#666666',
+                color: 'text.secondary',
               }}>
                 {product.description}
               </Typography>
@@ -453,14 +449,15 @@ function ProductDetailPage() {
 
             {/* Stock */}
             <Box sx={{ 
-              backgroundColor: product.stock > 0 ? 'rgba(165, 212, 165, 0.2)' : 'rgba(212, 165, 165, 0.2)',
+              backgroundColor: product.stock > 0 ? 'rgba(165, 212, 165, 0.15)' : 'rgba(0, 0, 0, 0.06)',
               borderRadius: 2,
               p: 1.5,
               mb: 3,
               textAlign: 'center',
-              border: `2px solid ${product.stock > 0 ? COLORS.success : COLORS.error}`,
+              border: '2px solid',
+              borderColor: product.stock > 0 ? 'success.main' : 'error.main',
             }}>
-              <Typography variant="body1" color={product.stock > 0 ? '#5d7a5d' : '#7a5d5d'} sx={{ 
+              <Typography variant="body1" color={product.stock > 0 ? 'success.dark' : 'error.dark'} sx={{ 
                 fontWeight: 600,
                 fontSize: '1.1rem',
               }}>
@@ -471,7 +468,7 @@ function ProductDetailPage() {
             {/* Precio: soporta número (formateado) o string ya formateado desde backend */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="h4" sx={{ 
-                color: currentSettings?.color_palette?.primary_color || '#d4a5a5', 
+                color: currentSettings?.color_palette?.primary_color || 'primary.main', 
                 fontWeight: 'bold', 
                 mb: 1 
               }}>
@@ -509,6 +506,16 @@ function ProductDetailPage() {
                 }}
               >
                 {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
+              </Button>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                disabled={product.stock === 0}
+                onClick={() => handleAddToCart(product)}
+                sx={BUTTON_STYLES.outlined}
+              >
+                Añadir al Carrito
               </Button>
 
               <Button

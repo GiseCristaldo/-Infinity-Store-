@@ -27,7 +27,7 @@ function AuthSuccessPage() {
 
         // Redirigir según el rol
         if (user.rol === 'admin') {
-          navigate('/admin/dashboard');
+          navigate('/admin');
         } else {
           navigate('/');
         }

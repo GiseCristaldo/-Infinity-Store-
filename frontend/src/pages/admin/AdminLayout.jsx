@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar, Box, Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Typography, Tooltip, IconButton, useMediaQuery
+  ListItemText, Toolbar, Typography, Tooltip, IconButton, useMediaQuery, Button
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
@@ -13,6 +13,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import LogoutIcon from '@mui/icons-material/Logout';
+import HomeIcon from '@mui/icons-material/Home';
 import { useAuth } from '../../context/AuthContext';
 
 const drawerWidth = 240;
@@ -47,6 +48,10 @@ function AdminLayout() {
       } catch (error) {
         console.error('Error al cerrar sesión:', error);
       }
+    };
+
+    const goToClientView = () => {
+      navigate('/');
     };
 
     const drawerContent = (
@@ -98,6 +103,26 @@ function AdminLayout() {
               <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                 Admin Panel
               </Typography>
+              {/* Botón Vista Cliente */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 1 }}>
+                <Tooltip title="Vista cliente">
+                  <Button
+                    color="inherit"
+                    variant="outlined"
+                    size="small"
+                    startIcon={<HomeIcon />}
+                    onClick={goToClientView}
+                    sx={{
+                      borderColor: 'primary.contrastText',
+                      color: 'primary.contrastText',
+                      textTransform: 'none',
+                      '&:hover': { backgroundColor: 'primary.dark', borderColor: 'primary.contrastText' }
+                    }}
+                  >
+                    Vista Cliente
+                  </Button>
+                </Tooltip>
+              </Box>
               <Tooltip title="Cerrar Sesión">
                 <IconButton color="inherit" onClick={handleLogout}>
                   <LogoutIcon />

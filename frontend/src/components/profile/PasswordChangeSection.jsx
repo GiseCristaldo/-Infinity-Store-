@@ -72,7 +72,7 @@ function PasswordChangeSection({
 
       <Collapse in={isExpanded}>
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               label="Contraseña actual"
@@ -103,7 +103,7 @@ function PasswordChangeSection({
             />
           </Grid>
           
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Nueva contraseña"
@@ -161,7 +161,7 @@ function PasswordChangeSection({
             )}
           </Grid>
           
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Confirmar nueva contraseña"

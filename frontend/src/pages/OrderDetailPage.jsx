@@ -20,6 +20,7 @@ import {
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
+import { formatPrice } from '../utils/priceUtils.js';
 
 function OrderDetailPage() {
   const { orderId } = useParams(); // Obtiene el ID de la orden de la URL
@@ -151,7 +152,7 @@ function OrderDetailPage() {
             </Typography>
             <Typography variant="body1" color="text.secondary">
               Total: <Typography component="span" variant="h6" color="secondary.main" sx={{ fontWeight: 'bold' }}>
-                ${order.total.toFixed(2)}
+                {formatPrice(order.total)}
               </Typography>
             </Typography>
           </Grid>
@@ -173,30 +174,30 @@ function OrderDetailPage() {
       <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3, color: 'text.primary' }}>
         Productos de la Orden
       </Typography>
-      {order.orderItems && order.orderItems.length > 0 ? (
+      {order.details && order.details.length > 0 ? (
         <Grid container spacing={3}>
-          {order.orderItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item.id}>
+          {order.details.map((detail) => (
+            <Grid item xs={12} sm={6} md={4} key={detail.id}>
               <Card sx={{ display: 'flex', borderRadius: 2, height: '100%' }}>
                 <CardMedia
                   component="img"
                   sx={{ width: 100, height: 100, objectFit: 'contain', p: 1, backgroundColor: 'background.default' }}
-                  image={item.product?.imageURL || "https://placehold.co/100x100/4a4a4a/f0f0f0?text=No+Image"}
-                  alt={item.product?.name || 'Producto Desconocido'}
+                  image={detail.product?.imagenPath ? `http://localhost:3001/${detail.product.imagenPath}` : "https://placehold.co/100x100/4a4a4a/f0f0f0?text=No+Image"}
+                  alt={detail.product?.name || 'Producto Desconocido'}
                   onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/4a4a4a/f0f0f0?text=Imagen+no+disponible"; }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold' }}>
-                    {item.product?.name || 'Producto Desconocido'}
+                    {detail.product?.name || 'Producto Desconocido'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Cantidad: {item.amount}
+                    Cantidad: {detail.amount}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Precio Unitario: ${typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
+                    Precio Unitario: {formatPrice(detail.unit_price ?? detail.product?.price ?? 0)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Subtotal: ${typeof item.price === 'number' && typeof item.amount === 'number' ? (item.amount * item.price).toFixed(2) : (parseInt(item.amount || 0) * parseFloat(item.price || 0)).toFixed(2)}
+                    Subtotal: {formatPrice(detail.subtotal ?? ((detail.amount || 0) * (detail.unit_price ?? detail.product?.price ?? 0)))}
                   </Typography>
                 </CardContent>
               </Card>

@@ -36,6 +36,11 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/api/orders`,
     BY_ID: (id) => `${API_BASE_URL}/api/orders/${id}`,
     MY_ORDERS: `${API_BASE_URL}/api/orders/my-orders`
+  },
+  
+  // Newsletter
+  NEWSLETTER: {
+    SUBSCRIBE: `${API_BASE_URL}/api/newsletter/subscribe`
   }
 }; 
 

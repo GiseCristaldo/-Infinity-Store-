@@ -87,11 +87,12 @@ function CartPage() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: ''
+
+
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: ''
   });
 
   const navigate = useNavigate();
@@ -135,17 +136,38 @@ function CartPage() {
     setSnackbarOpen(true);
   };
 
-  const handleInputChange = (e) => {
+
+
+  const handlePaymentInputChange = (e) => {
     const { name, value } = e.target;
-    setCustomerInfo(prev => ({
+    let formattedValue = value;
+
+    // Formatear número de tarjeta (agregar espacios cada 4 dígitos)
+    if (name === 'cardNumber') {
+      formattedValue = value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+      if (formattedValue.length > 19) formattedValue = formattedValue.substring(0, 19);
+    }
+    
+    // Formatear fecha de vencimiento (MM/YY)
+    if (name === 'expiryDate') {
+      formattedValue = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2');
+      if (formattedValue.length > 5) formattedValue = formattedValue.substring(0, 5);
+    }
+    
+    // Limitar CVV a 3 dígitos
+    if (name === 'cvv') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 3);
+    }
+
+    setPaymentInfo(prev => ({
       ...prev,
-      [name]: value
+      [name]: formattedValue
     }));
   };
 
   const handleCheckout = async () => {
-    if (!customerInfo.name || !customerInfo.email || !customerInfo.phone) {
-      setSnackbarMessage('Por favor, completa todos los campos obligatorios');
+    if (!paymentInfo.cardNumber || !paymentInfo.expiryDate || !paymentInfo.cvv) {
+      setSnackbarMessage('Por favor, completa todos los campos de pago');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       return;
@@ -154,13 +176,13 @@ function CartPage() {
     setLoading(true);
     try {
       const orderData = {
-        customer: customerInfo,
         items: cartItems.map(item => ({
           productId: item.id,
           quantity: item.quantity,
           price: normalizePrice(item.price)
         })),
-        total: getCartTotal()
+        total: getCartTotal(),
+        paymentMethod: 'credit_card_demo'
       };
 
       await createOrderService(orderData);
@@ -170,7 +192,7 @@ function CartPage() {
       setSnackbarOpen(true);
       
       clearCart();
-      setCustomerInfo({ name: '', email: '', phone: '', address: '' });
+      setPaymentInfo({ cardNumber: '', expiryDate: '', cvv: '' });
       
       setTimeout(() => {
         navigate('/');
@@ -283,7 +305,7 @@ function CartPage() {
 
       <Grid container spacing={2}>
         {/* Lista de productos */}
-        <Grid item xs={8}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Box sx={{ 
             backgroundColor: '#ffffff',
             borderRadius: 3,
@@ -579,7 +601,7 @@ function CartPage() {
         </Grid>
 
         {/* Resumen y checkout */}
-        <Grid item xs={4}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Box sx={{ 
             p: { xs: 2, sm: 3 },
             backgroundColor: '#ffffff',
@@ -644,19 +666,25 @@ function CartPage() {
               fontWeight: 600, 
               mb: 2 
             }}>
-              Información del Cliente
+              Información de Pago (Demo)
             </Typography>
 
             <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+
+
                 <TextField
-                  name="name"
-                  label="Nombre completo *"
-                  value={customerInfo.name}
-                  onChange={handleInputChange}
+                  name="cardNumber"
+                  label="Número de tarjeta *"
+                  value={paymentInfo.cardNumber}
+                  onChange={handlePaymentInputChange}
                   fullWidth
                   size="small"
+                  placeholder="1234 5678 9012 3456"
+                  inputProps={{ maxLength: 19 }}
                   sx={{
+                    mb: 2,
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: '#ffffff',
                       '& fieldset': {
@@ -678,22 +706,21 @@ function CartPage() {
                   }}
                 />
 
-                {/* CAMPOS EMAIL/TELÉFONO: Apilados verticalmente en móvil */}
                 <Box sx={{ 
                   display: 'flex', 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: { xs: 2, sm: 1 }
+                  gap: 2,
+                  mb: 2
                 }}>
                   <TextField
-                    name="email"
-                    label="Email *"
-                    type="email"
-                    value={customerInfo.email}
-                    onChange={handleInputChange}
+                    name="expiryDate"
+                    label="Vencimiento *"
+                    value={paymentInfo.expiryDate}
+                    onChange={handlePaymentInputChange}
                     size="small"
-                    fullWidth={true}
+                    placeholder="MM/YY"
+                    inputProps={{ maxLength: 5 }}
                     sx={{
-                      flex: { xs: 'none', sm: 1 },
+                      flex: 1,
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: '#ffffff',
                         '& fieldset': {
@@ -716,14 +743,15 @@ function CartPage() {
                   />
 
                   <TextField
-                    name="phone"
-                    label="Teléfono *"
-                    value={customerInfo.phone}
-                    onChange={handleInputChange}
+                    name="cvv"
+                    label="CVV *"
+                    value={paymentInfo.cvv}
+                    onChange={handlePaymentInputChange}
                     size="small"
-                    fullWidth={true}
+                    placeholder="123"
+                    inputProps={{ maxLength: 3 }}
                     sx={{
-                      flex: { xs: 'none', sm: 1 },
+                      flex: 1,
                       '& .MuiOutlinedInput-root': {
                         backgroundColor: '#ffffff',
                         '& fieldset': {
@@ -746,36 +774,16 @@ function CartPage() {
                   />
                 </Box>
 
-                <TextField
-                  name="address"
-                  label="Dirección (opcional)"
-                  value={customerInfo.address}
-                  onChange={handleInputChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#ffffff',
-                      '& fieldset': {
-                        borderColor: currentSettings?.color_palette?.accent_color || '#e0e0e0',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: currentSettings?.color_palette?.text_color + '80' || '#666666',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: currentSettings?.color_palette?.primary_color || '#d4a5a5',
-                    },
-                  }}
-                />
+                {/* Nota informativa */}
+                <Alert severity="info" sx={{ 
+                  mt: 2, 
+                  fontSize: '0.85rem',
+                  '& .MuiAlert-message': {
+                    fontSize: '0.85rem'
+                  }
+                }}>
+                  <strong>Modo Demo:</strong> Esta es una simulación. Los datos de pago no se procesan ni almacenan realmente.
+                </Alert>
               </Box>
             </Box>
 

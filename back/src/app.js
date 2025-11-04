@@ -26,8 +26,10 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:5175',
   'https://localhost:5173',
   'https://localhost:5174',
+  'https://localhost:5175',
   'https://infinity-store-frontend.vercel.app'
 ];
 
@@ -38,13 +40,10 @@ const corsOptions = {
     if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS bloqueado para origen: ${origin}`));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
-  credentials: true,
-  optionsSuccessStatus: 200
+  credentials: true
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));

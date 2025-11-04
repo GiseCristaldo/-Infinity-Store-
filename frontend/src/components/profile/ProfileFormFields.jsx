@@ -3,7 +3,8 @@ import {
   Grid, TextField, InputAdornment
 } from '@mui/material';
 import {
-  Person as PersonIcon, Email as EmailIcon
+  Person as PersonIcon, 
+  Email as EmailIcon
 } from '@mui/icons-material';
 
 /**
@@ -11,24 +12,24 @@ import {
  * @param {Object} props - Propiedades del componente
  * @param {Object} props.formData - Datos del formulario
  * @param {Object} props.errors - Errores de validación
- * @param {Function} props.onInputChange - Función para manejar cambios
+ * @param {Function} props.onChange - Función para manejar cambios
  * @param {boolean} props.disabled - Si los campos están deshabilitados
  * @returns {JSX.Element} Componente de campos de formulario
  */
 function ProfileFormFields({ 
   formData, 
   errors, 
-  onInputChange, 
+  onChange, 
   disabled = false 
 }) {
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} sm={6}>
+      <Grid size={{ xs: 12 }}>
         <TextField
           fullWidth
           label="Nombre completo"
           value={formData.nombre || ''}
-          onChange={onInputChange('nombre')}
+          onChange={onChange('nombre')}
           error={!!errors.nombre}
           helperText={errors.nombre}
           disabled={disabled}
@@ -49,16 +50,16 @@ function ProfileFormFields({
         />
       </Grid>
       
-      <Grid item xs={12} sm={6}>
+      <Grid size={{ xs: 12 }}>
         <TextField
           fullWidth
           label="Email"
           type="email"
           value={formData.email || ''}
-          onChange={onInputChange('email')}
+          onChange={onChange('email')}
           error={!!errors.email}
-          helperText={errors.email}
-          disabled={disabled}
+          helperText={errors.email || "El email no se puede modificar por seguridad"}
+          disabled={true} // Email siempre deshabilitado por seguridad
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -69,7 +70,7 @@ function ProfileFormFields({
           sx={{
             '& .MuiOutlinedInput-root': {
               '&:hover fieldset': {
-                borderColor: disabled ? 'grey.300' : 'primary.main',
+                borderColor: 'grey.300',
               },
             },
           }}

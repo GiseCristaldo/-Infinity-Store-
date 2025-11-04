@@ -1,127 +1,106 @@
-/**
- * Constantes de colores para mantener consistencia en toda la aplicación
- */
+// Centraliza tokens de color y estilos reutilizables tomando los valores del ThemeContext
+// Usa variables CSS del tema (definidas en ThemeContext) para evitar hardcodes
 
 export const COLORS = {
-  // Colores principales
   primary: {
-    main: '#d4a5a5',
-    light: '#e8c4c4',
-    dark: '#b8888a',
-    contrastText: '#ffffff'
+    main: 'var(--color-primary)',
+    light: 'var(--color-primary-light)',
+    dark: 'var(--color-primary-dark)',
+    contrastText: '#ffffff',
   },
-  
-  // Colores secundarios
   secondary: {
-    main: '#c9a9a9',
-    light: '#e0d0d0',
-    dark: '#a08080',
-    contrastText: '#d4a5a5'
+    main: 'var(--color-secondary)',
+    light: 'var(--color-secondary-light)',
+    dark: 'var(--color-secondary-dark)',
+    contrastText: '#ffffff',
   },
-  
-  // Colores de estado
-  success: '#a5d4a5',
-  error: '#d4a5a5',
-  warning: '#e8c4a0',
-  info: '#a5c4d4',
-  
-  // Colores de texto
+  accent: {
+    main: 'var(--color-accent)',
+    light: 'var(--color-accent-light)',
+    dark: 'var(--color-accent-dark)',
+    contrastText: '#ffffff',
+  },
   text: {
-    primary: '#333333',
-    secondary: '#8a7575',
-    light: '#333333'
+    // Usa tokens MUI cuando se trabaje en sx: 'text.primary' y 'text.secondary'
+    primary: 'text.primary',
+    secondary: 'text.secondary',
   },
-  
-  // Colores de fondo
   background: {
-    gradient: 'linear-gradient(135deg, #f8f4f4, #f0e8e8)',
-    paper: '#ffffff',
-    overlay: 'rgba(255, 255, 255, 0.9)'
+    default: 'background.default',
+    paper: 'background.paper',
+    gradient: 'var(--background-gradient)',
   },
-  
-  // Sombras
+  success: '#a5d4a5',
+  error: '#ff4d4f',
+  warning: '#ffa940',
+  info: '#40a9ff',
+  // Sombras neutrales para evitar tinte rosado
   shadows: {
-    light: '0 4px 12px rgba(212, 165, 165, 0.3)',
-    medium: '0 6px 20px rgba(212, 165, 165, 0.4)',
-    heavy: '0 8px 32px rgba(212, 165, 165, 0.15)'
-  }
+    soft: 'rgba(0, 0, 0, 0.06)',
+    medium: 'rgba(0, 0, 0, 0.12)',
+    strong: 'rgba(0, 0, 0, 0.18)',
+  },
 };
 
-// Estilos de botón reutilizables
+// Estilos de botón reutilizables (primario, outlined, texto)
 export const BUTTON_STYLES = {
   primary: {
-    backgroundColor: COLORS.primary.main,
     color: COLORS.primary.contrastText,
-    fontWeight: 600,
-    borderRadius: 2,
-    transition: 'all 0.3s ease',
+    backgroundColor: COLORS.primary.main,
+    boxShadow: `0 4px 12px ${COLORS.shadows.medium}`,
     '&:hover': {
       backgroundColor: COLORS.primary.light,
-      transform: 'translateY(-2px)',
-      boxShadow: COLORS.shadows.medium,
+      boxShadow: `0 6px 14px ${COLORS.shadows.strong}`,
+    },
+    '&:active': {
+      backgroundColor: COLORS.primary.dark,
     },
   },
-  
   outlined: {
-    borderColor: COLORS.primary.main,
     color: COLORS.primary.main,
-    fontWeight: 600,
-    borderRadius: 2,
-    transition: 'all 0.3s ease',
+    border: `1px solid ${COLORS.primary.main}`,
+    backgroundColor: 'transparent',
     '&:hover': {
+      color: COLORS.primary.dark,
       borderColor: COLORS.primary.light,
-      backgroundColor: 'rgba(212, 165, 165, 0.1)',
-      transform: 'translateY(-1px)',
+      // Fondo tenue usando mezcla; si no es soportado, mantiene transparente
+      backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
     },
-  }
-};
-
-// Estilos de card reutilizables
-export const CARD_STYLES = {
-  base: {
-    background: COLORS.background.gradient,
-    borderRadius: 3,
-    boxShadow: COLORS.shadows.heavy,
-    border: '1px solid rgba(212, 165, 165, 0.2)',
-    transition: 'all 0.3s ease',
-  },
-  
-  hover: {
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 25px rgba(212, 165, 165, 0.25)',
-    }
-  }
-};
-
-// Paleta específica para el panel de administración (neutral solicitada)
-export const ADMIN_COLORS = {
-  primary: {
-    main: '#a0b4c8',     // Cadet Blue (Crayola)
-    light: '#c8dcf0',    // Columbia Blue
-    dark: '#b4b4dc',     // Maximum Blue Purple
-    contrastText: '#ffffff'
-  },
-  secondary: {
-    main: '#b4b4dc',
-    light: '#c8dcf0',
-    dark: '#a0b4c8',
-    contrastText: '#141414'
   },
   text: {
-    primary: '#141414',  // contraste legible
-    secondary: '#a0b4c8',
-    light: '#141414'
+    color: COLORS.primary.main,
+    '&:hover': {
+      color: COLORS.primary.dark,
+      backgroundColor: 'transparent',
+    },
   },
-  background: {
-    gradient: 'linear-gradient(135deg, #ffffff, #f0f0f0)',
-    paper: '#ffffff',    // White
-    overlay: 'rgba(160, 180, 200, 0.12)', // sutil con Cadet Blue
-    default: '#f0f0f0'   // Anti-Flash White
+};
+
+// Estilos de tarjeta/base de paneles
+export const CARD_STYLES = {
+  base: {
+    backgroundColor: COLORS.background.paper,
+    border: `1px solid ${COLORS.shadows.soft}`,
+    boxShadow: `0 4px 12px ${COLORS.shadows.soft}`,
+    borderRadius: 8,
   },
-  shadows: {
-    light: '0 4px 12px rgba(160, 180, 200, 0.20)',
-    medium: '0 6px 20px rgba(160, 180, 200, 0.30)',
-    heavy: '0 8px 32px rgba(160, 180, 200, 0.18)'
-  }
+  subtle: {
+    backgroundColor: 'transparent',
+    border: `1px solid ${COLORS.shadows.soft}`,
+    boxShadow: `0 2px 8px ${COLORS.shadows.soft}`,
+    borderRadius: 8,
+  },
+};
+
+// Paleta administrativa neutral (mantener)
+export const ADMIN_COLORS = {
+  neutral: {
+    main: '#3c3c3c',
+    light: '#6b6b6b',
+    dark: '#1f1f1f',
+    contrastText: '#ffffff',
+  },
+  success: '#52c41a',
+  warning: '#faad14',
+  error: '#f5222d',
 };

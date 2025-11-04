@@ -4,7 +4,7 @@ import {
   List, ListItem, ListItemText, CircularProgress, 
   Divider, Button, IconButton, Alert, Container, Avatar
 } from '@mui/material';
-import { ADMIN_COLORS } from '../../utils/colorConstants.js';
+import { COLORS, ADMIN_COLORS } from '../../utils/colorConstants.js';
 import { Link } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -296,8 +296,8 @@ function DashboardAdmin() {
         sx={{ 
           mb: 4, 
           borderRadius: 3,
-          background: ADMIN_COLORS.background.gradient,
-          boxShadow: ADMIN_COLORS.shadows.medium
+          background: 'var(--background-gradient, linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%))',
+          boxShadow: COLORS.shadows.medium
         }}
         elevation={0}
       >
@@ -309,7 +309,7 @@ function DashboardAdmin() {
               position: 'absolute',
               top: 16,
               right: 16,
-              color: ADMIN_COLORS.primary.dark
+              color: COLORS.primary.dark
             }}
           >
             {new Date().toLocaleDateString('es-ES', {
@@ -335,7 +335,7 @@ function DashboardAdmin() {
               <Typography 
                 variant="body1"
                 sx={{ 
-                  color: ADMIN_COLORS.primary.dark,
+                  color: 'primary.dark',
                   maxWidth: '80%'
                 }}
               >
@@ -360,7 +360,7 @@ function DashboardAdmin() {
           gap: 1
         }}
       >
-        <DashboardIcon sx={{ fontSize: '1.75rem', color: ADMIN_COLORS.primary.main }} /> Resumen General
+        <DashboardIcon sx={{ fontSize: '1.75rem', color: 'primary.main' }} /> Resumen General
       </Typography>
       
       <Grid container spacing={3}>
@@ -373,7 +373,7 @@ function DashboardAdmin() {
             loading={stats.users.loading} 
             error={stats.users.error}
             linkTo="/admin/users"
-            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
+            gradientColors={`linear-gradient(135deg, ${COLORS.primary.dark} 0%, ${COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -384,7 +384,7 @@ function DashboardAdmin() {
             loading={stats.products.loading} 
             error={stats.products.error}
             linkTo="/admin/products"
-            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
+            gradientColors={`linear-gradient(135deg, ${COLORS.primary.dark} 0%, ${COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -395,7 +395,7 @@ function DashboardAdmin() {
             loading={stats.categories.loading} 
             error={stats.categories.error}
             linkTo="/admin/categories"
-            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
+            gradientColors={`linear-gradient(135deg, ${COLORS.primary.dark} 0%, ${COLORS.primary.main} 100%)`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -406,7 +406,7 @@ function DashboardAdmin() {
             loading={stats.orders.loading} 
             error={stats.orders.error}
             linkTo="/admin/orders"
-            gradientColors={`linear-gradient(135deg, ${ADMIN_COLORS.primary.dark} 0%, ${ADMIN_COLORS.primary.main} 100%)`}
+            gradientColors={`linear-gradient(135deg, ${COLORS.primary.dark} 0%, ${COLORS.primary.main} 100%)`}
           />
         </Grid>
 
@@ -445,7 +445,7 @@ function DashboardAdmin() {
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 borderBottom: '1px solid #f0f0f0',
-                backgroundColor: ADMIN_COLORS.background.overlay
+                backgroundColor: 'background.paper'
               }}>
                 <Typography 
                   variant="h6" 
@@ -654,7 +654,7 @@ function DashboardAdmin() {
                 justifyContent: 'space-between', 
                 alignItems: 'center',
                 borderBottom: '1px solid #f0f0f0',
-                backgroundColor: ADMIN_COLORS.background.overlay
+                backgroundColor: 'background.paper'
               }}>
                 <Typography 
                   variant="h6" 
@@ -821,7 +821,7 @@ function DashboardAdmin() {
                     >
                       <Avatar 
                         sx={{ 
-                        bgcolor: ADMIN_COLORS.primary.dark, 
+                        bgcolor: 'primary.dark', 
                           width: 45, 
                           height: 45,
                           mb: 1.5
@@ -881,7 +881,7 @@ function DashboardAdmin() {
                     >
                       <Avatar 
                         sx={{ 
-                        bgcolor: ADMIN_COLORS.primary.dark, 
+                        bgcolor: 'primary.dark', 
                           width: 45, 
                           height: 45,
                           mb: 1.5

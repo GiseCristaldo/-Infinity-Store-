@@ -12,6 +12,8 @@ export const useProfileForm = (initialData = {}) => {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
+    phone: '',
+    address: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -28,6 +30,8 @@ export const useProfileForm = (initialData = {}) => {
         ...prev,
         nombre: user.nombre || '',
         email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
@@ -79,8 +83,8 @@ export const useProfileForm = (initialData = {}) => {
       newErrors.nombre = 'El nombre es requerido';
     } else if (formData.nombre.length < 2) {
       newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
-    } else if (formData.nombre.length > 50) {
-      newErrors.nombre = 'El nombre no puede exceder los 50 caracteres';
+    } else if (formData.nombre.length > 100) {
+      newErrors.nombre = 'El nombre no puede exceder los 100 caracteres';
     }
     
     // Validar email
@@ -122,6 +126,8 @@ export const useProfileForm = (initialData = {}) => {
       setFormData({
         nombre: user.nombre || '',
         email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''

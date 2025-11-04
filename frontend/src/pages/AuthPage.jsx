@@ -274,7 +274,7 @@ function AuthPage() {
     setSnackbarOpen(true); 
     // --- LÓGICA DE REDIRECCIÓN BASADA EN ROL --- 
     if (result.user && result.user.rol === 'admin') { 
-      navigate('/admin/dashboard'); 
+      navigate('/admin'); 
     } else { 
       navigate('/'); 
     } 

@@ -50,3 +50,14 @@ coverage/
 
 # Archivos de datos de sesión (si se almacenan en el disco en el backend)
 sessions/
+
+# Ignorar dependencias
+    node_modules/
+
+# Ignorar carpetas de uploads y logs
+    /back/uploads/
+    /logs/
+    
+# Ignorar archivos generados por el sistema operativo
+    .DS_Store
+    

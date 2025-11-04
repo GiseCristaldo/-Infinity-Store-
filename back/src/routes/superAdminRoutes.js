@@ -9,6 +9,8 @@ import {
 import {
   getColorPalettes,
   changeActivePalette,
+  createColorPalette,
+  createMultipleColorPalettes,
   getFontOptions,
   updateSiteFonts,
   updateBrandingSettings,
@@ -45,6 +47,12 @@ router.delete('/admins/:id', deactivateAdmin);
 // Customization Routes (Tasks 5-9)
 // GET /api/super-admin/customization/palettes - Get all available color palettes
 router.get('/customization/palettes', getColorPalettes);
+
+// POST /api/super-admin/customization/palettes - Create a new color palette
+router.post('/customization/palettes', createColorPalette);
+
+// POST /api/super-admin/customization/palettes/bulk - Create multiple color palettes
+router.post('/customization/palettes/bulk', createMultipleColorPalettes);
 
 // PUT /api/super-admin/customization/palette - Change active color palette
 router.put('/customization/palette', changeActivePalette);

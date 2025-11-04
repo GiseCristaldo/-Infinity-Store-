@@ -8,6 +8,8 @@ import { useSearch } from '../context/SearchContext.jsx';
 import { useCart } from '../context/CartContext.jsx'; // importamos el contexto del carrito
 import SearchBar from '../components/SearchBar.jsx';
 import MobileFilters from '../components/MobileFilters.jsx';
+import { BUTTON_STYLES } from '../utils/colorConstants.js';
+import CategoryFilter from '../components/CategoryFilter.jsx';
 
 /**
  * Página que muestra los productos de una categoría específica.
@@ -155,6 +157,10 @@ function CategoryDetailPage() {
       <Box sx={{ mt: 2, mb: 3, display: { xs: 'none', sm: 'block' } }}>
         <SearchBar />
       </Box>
+      {/* Píldoras de categorías en desktop/tablet */}
+      <Box sx={{ display: { xs: 'none', sm: 'block' }, mb: 2 }}>
+        <CategoryFilter selectedCategoryId={id} onSelectCategory={handleSelectCategory} />
+      </Box>
       {/* Filtros compactos para móviles */}
       <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 2 }}>
         <MobileFilters selectedCategoryId={id} onSelectCategory={handleSelectCategory} />
@@ -274,19 +280,7 @@ function CategoryDetailPage() {
                       variant="contained"
                       color="primary"
                       fullWidth
-                      sx={{
-                        mb: 1,
-                        backgroundColor: '#d4a5a5',
-                        color: '#ffffff',
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          backgroundColor: '#e8c4c4',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 4px 12px rgba(212, 165, 165, 0.3)',
-                        },
-                      }}
+                      sx={BUTTON_STYLES.primary}
                       component={Link}
                       to={`/product/${product.id}`}
                     >
@@ -298,16 +292,7 @@ function CategoryDetailPage() {
                       disabled={product.stock === 0}
                       onClick={() => handleAddToCart(product)}
                       sx={{
-                        borderColor: '#d4a5a5',
-                        color: '#d4a5a5',
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: '#e8c4c4',
-                          backgroundColor: 'rgba(212, 165, 165, 0.1)',
-                          transform: 'translateY(-1px)',
-                        },
+                        ...BUTTON_STYLES.outlined,
                         '&:disabled': {
                           borderColor: '#ccc',
                           color: '#999',

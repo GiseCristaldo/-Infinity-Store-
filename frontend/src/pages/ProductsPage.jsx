@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import SearchBar from '../components/SearchBar.jsx';
 import CategoryFilter from '../components/CategoryFilter.jsx';
 import MobileFilters from '../components/MobileFilters.jsx';
+import { BUTTON_STYLES } from '../utils/colorConstants.js';
 
 // Debounce helper to avoid input focus glitches during live fetches
 const useDebounce = (value, delay) => {
@@ -367,18 +368,7 @@ function ProductsPage() {
                       disabled={product.stock === 0}
                       onClick={() => handleAddToCart(product)}
                       sx={{
-                        borderColor: currentSettings?.color_palette?.primary_color || '#d4a5a5',
-                        color: currentSettings?.color_palette?.primary_color || '#d4a5a5',
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: currentSettings?.color_palette?.secondary_color || '#e8c4c4',
-                          backgroundColor: currentSettings?.color_palette ? 
-                            `${currentSettings.color_palette.accent_color}20` :
-                            'rgba(212, 165, 165, 0.1)',
-                          transform: 'translateY(-1px)',
-                        },
+                        ...BUTTON_STYLES.outlined,
                         '&:disabled': {
                           borderColor: '#ccc',
                           color: '#999',

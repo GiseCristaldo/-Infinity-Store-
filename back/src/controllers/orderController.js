@@ -26,13 +26,16 @@ export const createOrder = async (req, res) => {
         for (let i = 0; i < items.length; i++) {
             const product = products[i];
             const item = items[i];
-            if (!product || product.stock < item.amount) {
+            // Usar quantity si está presente, sino usar amount para compatibilidad
+            const quantity = item.quantity || item.amount;
+            if (!product || product.stock < quantity) {
                 await t.rollback(); // Revertir transacción si hay error
                 return res.status(400).json({ message: `Stock insuficiente para el producto: ${product?.name || item.productId}` });
             }
             item.unitPrice = product.price;
-            item.subtotal = item.amount * item.unitPrice;
+            item.subtotal = quantity * item.unitPrice;
             total += item.subtotal;
+            item.amount = quantity; // Normalizar para el resto del código
         }
 
         const newOrder = await Order.create({

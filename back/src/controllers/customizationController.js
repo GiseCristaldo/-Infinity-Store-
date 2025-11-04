@@ -1194,3 +1194,183 @@ export const updateHeroVisibility = async (req, res) => {
         });
     }
 };
+/**
+
+ * Create a new color palette
+ * POST /api/super-admin/customization/palettes
+ */
+export const createColorPalette = async (req, res) => {
+  try {
+    const { name, primary_color, secondary_color, accent_color, text_color } = req.body;
+
+    // Validate required fields
+    if (!name || !primary_color || !secondary_color || !accent_color || !text_color) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos los campos son requeridos: name, primary_color, secondary_color, accent_color, text_color'
+      });
+    }
+
+    // Validate color format (hex colors)
+    const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    const colors = [primary_color, secondary_color, accent_color, text_color];
+    
+    for (const color of colors) {
+      if (!hexColorRegex.test(color)) {
+        return res.status(400).json({
+          success: false,
+          message: `Color inválido: ${color}. Use formato hexadecimal (#RRGGBB)`
+        });
+      }
+    }
+
+    // Check if palette name already exists
+    const existingPalette = await ColorPalette.findOne({
+      where: { name }
+    });
+
+    if (existingPalette) {
+      return res.status(409).json({
+        success: false,
+        message: `Ya existe una paleta con el nombre "${name}"`
+      });
+    }
+
+    // Create new palette
+    const newPalette = await ColorPalette.create({
+      name,
+      primary_color,
+      secondary_color,
+      accent_color,
+      text_color,
+      is_active: false // New palettes are not active by default
+    });
+
+    // Log the creation in customization history
+    await CustomizationHistory.create({
+      user_id: req.user?.id || null,
+      change_type: 'palette_created',
+      change_description: `Nueva paleta de colores creada: ${name}`,
+      old_value: null,
+      new_value: JSON.stringify({
+        name,
+        primary_color,
+        secondary_color,
+        accent_color,
+        text_color
+      })
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Paleta de colores creada exitosamente',
+      data: {
+        palette: newPalette
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al crear paleta de colores:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al crear paleta de colores',
+      code: 'CREATE_PALETTE_ERROR'
+    });
+  }
+};
+
+/**
+ * Bulk create multiple color palettes
+ * POST /api/super-admin/customization/palettes/bulk
+ */
+export const createMultipleColorPalettes = async (req, res) => {
+  try {
+    const { palettes } = req.body;
+
+    if (!Array.isArray(palettes) || palettes.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere un array de paletas no vacío'
+      });
+    }
+
+    const results = {
+      created: [],
+      skipped: [],
+      errors: []
+    };
+
+    // Validate and create each palette
+    for (const paletteData of palettes) {
+      try {
+        const { name, primary_color, secondary_color, accent_color, text_color } = paletteData;
+
+        // Validate required fields
+        if (!name || !primary_color || !secondary_color || !accent_color || !text_color) {
+          results.errors.push({
+            name: name || 'Sin nombre',
+            error: 'Campos requeridos faltantes'
+          });
+          continue;
+        }
+
+        // Check if palette already exists
+        const existingPalette = await ColorPalette.findOne({
+          where: { name }
+        });
+
+        if (existingPalette) {
+          results.skipped.push({
+            name,
+            reason: 'Ya existe'
+          });
+          continue;
+        }
+
+        // Create palette
+        const newPalette = await ColorPalette.create({
+          name,
+          primary_color,
+          secondary_color,
+          accent_color,
+          text_color,
+          is_active: false
+        });
+
+        results.created.push({
+          id: newPalette.id,
+          name: newPalette.name
+        });
+
+        // Log creation
+        await CustomizationHistory.create({
+          user_id: req.user?.id || null,
+          change_type: 'palette_created',
+          change_description: `Nueva paleta de colores creada: ${name}`,
+          old_value: null,
+          new_value: JSON.stringify(paletteData)
+        });
+
+      } catch (error) {
+        results.errors.push({
+          name: paletteData.name || 'Sin nombre',
+          error: error.message
+        });
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Proceso completado. Creadas: ${results.created.length}, Omitidas: ${results.skipped.length}, Errores: ${results.errors.length}`,
+      data: results
+    });
+
+  } catch (error) {
+    console.error('Error al crear paletas múltiples:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al crear paletas múltiples',
+      code: 'CREATE_MULTIPLE_PALETTES_ERROR'
+    });
+  }
+};

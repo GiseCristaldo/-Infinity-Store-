@@ -14,20 +14,28 @@ export const isValidPrice = (price) => {
 
 /**
  * Formatea un precio para mostrar con símbolo de moneda
+ * Usa formato local de Argentina (es-AR) y ARS por defecto.
  * @param {number|string} price - El precio a formatear
- * @param {string} currency - Símbolo de moneda (por defecto '$')
+ * @param {string} currencyCode - Código de moneda, por defecto 'ARS'
+ * @param {string} locale - Locale para formato, por defecto 'es-AR'
  * @returns {string} - Precio formateado
  */
-export const formatPrice = (price, currency = '$') => {
-  // Convertir a número y validar
+export const formatPrice = (price, currencyCode = 'ARS', locale = 'es-AR') => {
   const numPrice = parseFloat(price);
-  
-  // Verificar si es un número válido y mayor o igual a 0
   if (isNaN(numPrice) || numPrice < 0) {
-    return `${currency}0.00`;
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(0);
   }
-  
-  return `${currency}${numPrice.toFixed(2)}`;
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numPrice);
 };
 
 /**
@@ -73,6 +81,20 @@ export const calculateSavings = (originalPrice, discountPercentage) => {
 };
 
 /**
+ * Formatea un número como porcentaje
+ * @param {number|string} value - Valor a formatear
+ * @returns {string} - Porcentaje formateado
+ */
+export const formatPercentage = (value) => {
+  if (!isValidPrice(value)) {
+    return '0%';
+  }
+  
+  const numValue = parseFloat(value);
+  return `${numValue.toFixed(0)}%`;
+};
+
+/**
  * Calcula el total de un carrito de compras
  * @param {Array} items - Array de items del carrito
  * @returns {number} - Total del carrito
@@ -90,18 +112,4 @@ export const calculateCartTotal = (items) => {
     const itemPrice = discount > 0 ? calculateDiscountedPrice(price, discount) : price;
     return total + (itemPrice * quantity);
   }, 0);
-};
-
-/**
- * Formatea un número como porcentaje
- * @param {number|string} value - Valor a formatear
- * @returns {string} - Porcentaje formateado
- */
-export const formatPercentage = (value) => {
-  if (!isValidPrice(value)) {
-    return '0%';
-  }
-  
-  const numValue = parseFloat(value);
-  return `${numValue.toFixed(0)}%`;
 };

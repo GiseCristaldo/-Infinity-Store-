@@ -11,37 +11,49 @@ import {
   Receipt as ReceiptIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import OrderDetailModal from '../components/OrderDetailModal';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const statusColors = {
   'pendiente': 'warning',
-  'confirmada': 'info',
-  'en_preparacion': 'primary',
-  'enviada': 'secondary',
-  'entregada': 'success',
-  'cancelada': 'error'
+  'pagado': 'success',
+  'enviado': 'info',
+  'cancelado': 'error'
 };
 
 const statusLabels = {
   'pendiente': 'Pendiente',
-  'confirmada': 'Confirmada',
-  'en_preparacion': 'En Preparación',
-  'enviada': 'Enviada',
-  'entregada': 'Entregada',
-  'cancelada': 'Cancelada'
+  'pagado': 'Pagado',
+  'enviado': 'Enviado',
+  'cancelado': 'Cancelado'
 };
 
 function MyOrders() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
+
+  const normalizeOrders = (raw) => {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((o) => ({
+      id: o.id,
+      date: o.date || o.created_at,
+      state: o.state,
+      total: typeof o.total === 'number' ? o.total : parseFloat(o.total || 0),
+      items: Array.isArray(o.details)
+        ? o.details.map((d) => ({
+            name: d.product?.name || 'Producto',
+            quantity: d.amount,
+            image: d.product?.imagenPath ? `http://localhost:3001/${d.product.imagenPath}` : undefined,
+          }))
+        : [],
+    }));
+  };
 
   useEffect(() => {
     loadOrders();
@@ -54,7 +66,8 @@ function MyOrders() {
       const response = await axios.get('/api/orders/my-orders', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setOrders(response.data.orders || []);
+      const ordersRaw = Array.isArray(response.data) ? response.data : (response.data.orders || []);
+      setOrders(normalizeOrders(ordersRaw));
     } catch (error) {
       console.error('Error loading orders:', error);
       setError('Error al cargar las órdenes');
@@ -63,18 +76,8 @@ function MyOrders() {
     }
   };
 
-  const handleViewDetails = async (orderId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`/api/orders/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSelectedOrder(response.data.order);
-      setDetailModalOpen(true);
-    } catch (error) {
-      console.error('Error loading order details:', error);
-      setError('Error al cargar los detalles de la orden');
-    }
+  const handleViewDetails = (orderId) => {
+    navigate(`/mis-ordenes/${orderId}`);
   };
 
   const formatDate = (dateString) => {
@@ -86,10 +89,12 @@ function MyOrders() {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
+      currency: 'ARS',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount ?? 0);
   };
 
   if (loading) {
@@ -139,7 +144,7 @@ function MyOrders() {
                             Orden #{order.id}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {formatDate(order.created_at)}
+                            {formatDate(order.date)}
                           </Typography>
                         </Box>
                         <Chip
@@ -218,7 +223,7 @@ function MyOrders() {
                       
                       <TableCell>
                         <Typography variant="body2">
-                          {formatDate(order.created_at)}
+                          {formatDate(order.date)}
                         </Typography>
                       </TableCell>
                       
@@ -271,15 +276,7 @@ function MyOrders() {
         </>
       )}
 
-      {/* Modal de detalles */}
-      <OrderDetailModal
-        open={detailModalOpen}
-        onClose={() => {
-          setDetailModalOpen(false);
-          setSelectedOrder(null);
-        }}
-        order={selectedOrder}
-      />
+      {/* Modal de detalles (navegación a página de detalle en su lugar) */}
     </Box>
   );
 }
