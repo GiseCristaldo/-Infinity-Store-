@@ -52,12 +52,15 @@ coverage/
 sessions/
 
 # Ignorar dependencias
-    node_modules/
+node_modules/
 
 # Ignorar carpetas de uploads y logs
-    /back/uploads/
-    /logs/
-    
+uploads/**
+!uploads/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/customization/.gitkeep
+logs/
+
 # Ignorar archivos generados por el sistema operativo
-    .DS_Store
+.DS_Store
     

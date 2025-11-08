@@ -72,6 +72,13 @@ function TypographySettings() {
       heading: 'Pacifico',
       description: 'Casual y relajada',
       cursive: true
+    },
+    // Nueva combinación con Shrikhand para títulos
+    {
+      name: 'Display Shrikhand ✨',
+      primary: 'Inter',
+      heading: 'Shrikhand',
+      description: 'Títulos display llamativos con cuerpo legible'
     }
   ];
 

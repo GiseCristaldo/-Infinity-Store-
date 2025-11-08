@@ -132,7 +132,7 @@ function PreviewPage() {
   const loadGoogleFonts = (fonts) => {
     const fontFamilies = fonts.filter(font => 
       ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Dancing Script', 'Caveat',
-       'Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico'].includes(font)
+       'Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico', 'Shrikhand'].includes(font)
     );
     
     if (fontFamilies.length === 0) return;

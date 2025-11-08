@@ -1,0 +1,39 @@
+erDiagram
+  Category {
+    INTEGER id
+  }
+  Product {
+    INTEGER id
+  }
+  User {
+    INTEGER id
+  }
+  Order {
+    INTEGER id
+  }
+  OrderDetail {
+    INTEGER id
+  }
+  File {
+    INTEGER id
+  }
+  ColorPalette {
+    INTEGER id
+  }
+  SiteSettings {
+    INTEGER id
+  }
+  CustomizationHistory {
+    INTEGER id
+  }
+  CarouselImage {
+    INTEGER id
+  }
+  Category ||--o{ Product : hasMany
+  Product ||--o{ OrderDetail : hasMany
+  Product ||--o{ File : hasMany
+  User ||--o{ Order : hasMany
+  User ||--o{ SiteSettings : hasMany
+  User ||--o{ CustomizationHistory : hasMany
+  Order ||--o{ OrderDetail : hasMany
+  ColorPalette ||--o{ SiteSettings : hasMany

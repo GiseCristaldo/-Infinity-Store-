@@ -175,17 +175,32 @@ function CartPage() {
 
     setLoading(true);
     try {
+      // Verificación previa de autenticación para evitar 'Bearer null'
+      const token = localStorage.getItem('token');
+      if (!token || token === 'null' || token === 'undefined') {
+        setLoading(false);
+        // Opcional: limpiar posibles residuos
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/auth');
+        return;
+      }
+
+      // Calcular total del carrito y normalizar precios
+      const total = getCartTotal();
+
+      // Construir datos de la orden
       const orderData = {
         items: cartItems.map(item => ({
           productId: item.id,
           quantity: item.quantity,
           price: normalizePrice(item.price)
         })),
-        total: getCartTotal(),
+        total: total,
         paymentMethod: 'credit_card_demo'
       };
 
-      await createOrderService(orderData);
+      const response = await createOrderService(orderData);
       
       setSnackbarMessage('¡Pedido realizado con éxito!');
       setSnackbarSeverity('success');
@@ -200,6 +215,17 @@ function CartPage() {
       
     } catch (error) {
       console.error('Error al procesar el pedido:', error);
+      // Manejo robusto de 401 y token inválido
+      const status = error?.status || error?.response?.status;
+      const code = error?.code || error?.response?.data?.code;
+      const message = error?.message || error?.response?.data?.message;
+
+      if (status === 401 || code === 'AUTH_TOKEN_REQUIRED' || message === 'Token inválido' || message === 'Token no proporcionado') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/auth');
+        return;
+      }
       setSnackbarMessage('Error al procesar el pedido. Inténtalo de nuevo.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);

@@ -9,7 +9,7 @@ export default function ContactoPage() {
   const [open, setOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const endpoint = API_ENDPOINTS.CONTACT.SUBMIT || '/api/contact';
+  const endpoint = API_ENDPOINTS.CONTACT.SUBMIT;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleSubmit = async (e) => {

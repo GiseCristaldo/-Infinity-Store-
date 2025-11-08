@@ -174,7 +174,8 @@ export const getFontOptions = async (req, res) => {
         { name: 'Montserrat', category: 'sans-serif', description: 'Sans-serif geométrica y moderna' },
         { name: 'Poppins', category: 'sans-serif', description: 'Sans-serif redondeada y amigable' },
         { name: 'Great Vibes', category: 'cursive', description: 'Cursiva script muy elegante ✨' },
-        { name: 'Pacifico', category: 'cursive', description: 'Cursiva surf y relajada ✨' }
+        { name: 'Pacifico', category: 'cursive', description: 'Cursiva surf y relajada ✨' },
+        { name: 'Shrikhand', category: 'serif', description: 'Display llamativa para títulos' }
       ],
       font_combinations: [
         { 
@@ -257,7 +258,7 @@ export const updateSiteFonts = async (req, res) => {
 
     // Define valid font options
     const validPrimaryFonts = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Dancing Script', 'Caveat'];
-    const validHeadingFonts = ['Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico'];
+    const validHeadingFonts = ['Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico', 'Shrikhand'];
 
     let newPrimaryFont = primary_font;
     let newHeadingFont = heading_font;

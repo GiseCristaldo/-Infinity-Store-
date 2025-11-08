@@ -8,7 +8,8 @@ import {
     deleteCategory,
 } from '../controllers/categoriesController.js';
 import { upload } from '../config/upload.js';
- import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
+import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
+
 const router = Router();
 
 // Obtener todas las categorías activas

@@ -63,6 +63,13 @@ export const deleteOrder = async (id) => {
 // Crear una nueva orden (esto normalmente lo haría el cliente)
 export const createOrder = async (orderData) => {
   const token = localStorage.getItem('token');
+  // Evitar enviar Authorization: Bearer null
+  if (!token || token === 'null' || token === 'undefined') {
+    const err = new Error('Token no proporcionado');
+    err.status = 401;
+    err.code = 'AUTH_TOKEN_REQUIRED';
+    throw err;
+  }
   try {
     const response = await axios.post(`${API_URL}/orders`, orderData, {
       headers: { 'Authorization': `Bearer ${token}` }

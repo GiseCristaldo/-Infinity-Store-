@@ -6,19 +6,19 @@ export const COLORS = {
     main: 'var(--color-primary)',
     light: 'var(--color-primary-light)',
     dark: 'var(--color-primary-dark)',
-    contrastText: '#ffffff',
+    contrastText: '#f5cdc0',
   },
   secondary: {
     main: 'var(--color-secondary)',
     light: 'var(--color-secondary-light)',
     dark: 'var(--color-secondary-dark)',
-    contrastText: '#ffffff',
+    contrastText: '#f5cdc0',
   },
   accent: {
     main: 'var(--color-accent)',
     light: 'var(--color-accent-light)',
     dark: 'var(--color-accent-dark)',
-    contrastText: '#ffffff',
+    contrastText: '#f5cdc0',
   },
   text: {
     // Usa tokens MUI cuando se trabaje en sx: 'text.primary' y 'text.secondary'

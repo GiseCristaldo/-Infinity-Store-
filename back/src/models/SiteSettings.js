@@ -63,7 +63,7 @@ export const SiteSettings = sequelize.define('SiteSettings', {
         allowNull: false,
         defaultValue: 'Orbitron',
         validate: {
-            isIn: [['Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico']]
+            isIn: [['Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico', 'Shrikhand']]
         }
     },
     updated_by: {

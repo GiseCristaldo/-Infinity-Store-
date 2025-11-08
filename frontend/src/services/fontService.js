@@ -226,6 +226,14 @@ class FontService {
           description: 'Cursiva surf y relajada ✨',
           weights: [400],
           googleFont: true
+        },
+        // Shrikhand (Google Font) para títulos display
+        {
+          name: 'Shrikhand',
+          category: 'serif',
+          description: 'Display llamativa para títulos',
+          weights: [400],
+          googleFont: true
         }
       ]
     };

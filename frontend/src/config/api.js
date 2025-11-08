@@ -41,6 +41,11 @@ export const API_ENDPOINTS = {
   // Newsletter
   NEWSLETTER: {
     SUBSCRIBE: `${API_BASE_URL}/api/newsletter/subscribe`
+  },
+
+  // Contacto
+  CONTACT: {
+    SUBMIT: `${API_BASE_URL}/api/contact`
   }
 }; 
 

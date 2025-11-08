@@ -193,7 +193,7 @@ class ThemeService {
   isGoogleFont(fontName) {
     const googleFonts = [
       'Inter', 'Roboto', 'Open Sans', 'Lato', 'Dancing Script', 'Caveat',
-      'Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico'
+      'Orbitron', 'Playfair Display', 'Montserrat', 'Poppins', 'Great Vibes', 'Pacifico', 'Shrikhand'
     ];
     return googleFonts.includes(fontName);
   }
@@ -212,7 +212,8 @@ class ThemeService {
       'Montserrat': '"Helvetica Neue", Helvetica, Arial, sans-serif',
       'Poppins': '"Helvetica Neue", Helvetica, Arial, sans-serif',
       'Great Vibes': 'cursive, "Brush Script MT", "Lucida Handwriting", fantasy',
-      'Pacifico': 'cursive, "Marker Felt", "Comic Sans MS", fantasy'
+      'Pacifico': 'cursive, "Marker Felt", "Comic Sans MS", fantasy',
+      'Shrikhand': 'Georgia, "Times New Roman", Times, serif'
     };
 
     const fallbacks = fontCategories[fontName] || 'sans-serif';

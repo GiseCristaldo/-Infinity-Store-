@@ -1,7 +1,8 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { Typography, Box, Paper, Container, Card, CardContent, CardMedia, Button, Snackbar, Alert, Chip, CircularProgress } from '@mui/material';
-import CategoryCardList from '../components/CategoryCardList.jsx';
+// import CategoryCardList from '../components/CategoryCardList.jsx';
+import CategoryRowCarousel from '../components/CategoryRowCarousel.jsx';
 import HeroSection from '../components/HeroSection.jsx';
 import ImageCarousel from '../components/ImageCarousel.jsx';
 import SearchBar from '../components/SearchBar.jsx';
@@ -10,7 +11,9 @@ import { useSearch } from '../context/SearchContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { Link } from 'react-router-dom';
 
-function HomePage() {
+// Mantenemos el resto del contenido de la HomePage intacto.
+
+export default function HomePage() {
   const { query, sort } = useSearch();
   const { addToCart, cartItems } = useCart();
   const [results, setResults] = useState([]);
@@ -173,13 +176,14 @@ function HomePage() {
 
       <Box sx={{ textAlign: 'center' }}>
         <Box sx={{ mt: 2 }}>
-          <CategoryCardList /> 
+          <CategoryRowCarousel />
+          {/* <CategoryCardList /> */}
         </Box>
-
       </Box>
-           {/* HeroSection removido para este layout */}
+      {/* HeroSection removido para este layout */}
     </Container>
   );
 }
 
-export default HomePage;
+// Remove duplicate default export
+// export default HomePage;
